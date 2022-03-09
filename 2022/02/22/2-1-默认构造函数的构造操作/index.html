@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="2020.11.14 与WL相恋.">
+  <meta name="description" content="什么时候默认构造函数是delete的？当一个类，没有定义构造函数的时候，我们知道编译器会给你合成一个默认构造函数，但当有以下情况的时候，编译器并不会为你合成一个，也就是定义为删除：  类的某个数据类成员，它的析构函数是删除或者无法访问的（access level） 类的某个数据类成员无法默认构造的时候 它就是无法默认构造，比如有个其他的构造函数了，却没定义默认构造函数. 它是个引用，那么它必须得显">
 <meta property="og:type" content="article">
-<meta property="og:title" content="开端">
-<meta property="og:url" content="https://yanleiwang.github.io/2022/02/24/%E5%BC%80%E7%AB%AF/index.html">
+<meta property="og:title" content="2.1 默认构造函数的构造操作">
+<meta property="og:url" content="https://yanleiwang.github.io/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/index.html">
 <meta property="og:site_name" content="Love WL Forever">
-<meta property="og:description" content="2020.11.14 与WL相恋.">
+<meta property="og:description" content="什么时候默认构造函数是delete的？当一个类，没有定义构造函数的时候，我们知道编译器会给你合成一个默认构造函数，但当有以下情况的时候，编译器并不会为你合成一个，也就是定义为删除：  类的某个数据类成员，它的析构函数是删除或者无法访问的（access level） 类的某个数据类成员无法默认构造的时候 它就是无法默认构造，比如有个其他的构造函数了，却没定义默认构造函数. 它是个引用，那么它必须得显">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-02-24T13:20:36.000Z">
-<meta property="article:modified_time" content="2022-02-24T13:27:56.859Z">
+<meta property="article:published_time" content="2022-02-22T14:55:45.000Z">
+<meta property="article:modified_time" content="2022-03-08T15:28:05.102Z">
 <meta property="article:author" content="wyl">
-<meta property="article:tag" content="爱情">
+<meta property="article:tag" content="C&#x2F;C++">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://yanleiwang.github.io/2022/02/24/%E5%BC%80%E7%AB%AF/">
+<link rel="canonical" href="https://yanleiwang.github.io/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>开端 | Love WL Forever</title>
+  <title>2.1 默认构造函数的构造操作 | Love WL Forever</title>
   
 
 
@@ -189,7 +189,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/24/%E5%BC%80%E7%AB%AF/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -202,7 +202,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          开端
+          2.1 默认构造函数的构造操作
         </h1>
 
         <div class="post-meta">
@@ -211,17 +211,23 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-02-24 21:20:36 / 修改时间：21:27:56" itemprop="dateCreated datePublished" datetime="2022-02-24T21:20:36+08:00">2022-02-24</time>
+              <time title="创建时间：2022-02-22 22:55:45" itemprop="dateCreated datePublished" datetime="2022-02-22T22:55:45+08:00">2022-02-22</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-08 23:28:05" itemprop="dateModified" datetime="2022-03-08T23:28:05+08:00">2022-03-08</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%94%9F%E6%B4%BB/" itemprop="url" rel="index"><span itemprop="name">生活</span></a>
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
                 </span>
             </span>
 
@@ -236,7 +242,40 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><strong>2020.11.14 与WL相恋.</strong></p>
+        <h2 id="什么时候默认构造函数是delete的？"><a href="#什么时候默认构造函数是delete的？" class="headerlink" title="什么时候默认构造函数是delete的？"></a>什么时候默认构造函数是delete的？</h2><p>当一个类，没有定义构造函数的时候，我们知道编译器会给你合成一个默认构造函数，但当有以下情况的时候，编译器并不会为你合成一个，也就是定义为删除：</p>
+<ul>
+<li>类的某个数据类成员，它的析构函数是删除或者无法访问的（access level）</li>
+<li>类的某个数据类成员无法默认构造的时候<ul>
+<li>它就是无法默认构造，比如有个其他的构造函数了，却没定义默认构造函数.</li>
+<li>它是个引用，那么它必须得显式初始化，然后又没给它类内初始值</li>
+<li>它是个const，且没有类内初始值,  但是没有显式的默认构造函数.（const 对象必须要初始化，但是一个有显式的默认构造函数的const 也是ok的， 比如 const string s1； 不会报错. 它可能会有一个编译器合成的默认构造函数，但是对于const 对象来说，不顶事）</li>
+</ul>
+</li>
+<li>以上数据类成员包括基类</li>
+</ul>
+<h2 id="默认构造函数会干什么事？"><a href="#默认构造函数会干什么事？" class="headerlink" title="默认构造函数会干什么事？"></a>默认构造函数会干什么事？</h2><p>编译器合成版本的默认构造函数会按以下顺序执行：</p>
+<ol>
+<li>调用虚基类构造函数（假如有虚基类）</li>
+<li>调用所有基类的构造函数，以基类的声明顺序为顺序（假如有基类）</li>
+<li>设定虚表指针的值，指向相应虚函数表。（假如有虚函数）</li>
+<li>调用所有数据成员的构造函数，以声明顺序为顺序（假如有类类型的数据成员）</li>
+</ol>
+<p><strong>补充：</strong></p>
+<ul>
+<li><p>其中1、2、4，假如初始化列表显示提供了参数，会被传递过去，调用相应构造函数，否则调用默认构造函数。</p>
+</li>
+<li><p><strong>自己定义的所有构造函数，在执行函数体之前，也会被编译器执行1-4的内容, 也就是步骤5才是执行函数体。</strong></p>
+</li>
+<li><p>对于步骤4，内置类型的，比如整型、浮点型、字符型、指针、内置类型数组等都不会被编译器初始化，这些是程序员需要要干的事情。</p>
+</li>
+<li><p>只有在1,2,3,4至少存在一个步骤的时候，编译器才会为你实际合成一个默认构造函数，否则是不会被合成的, 也就是所谓的trivial construction。 </p>
+</li>
+<li><p>假如一个类没有默认构造函数，编译器也不给你合（也就是被定义为删除的），你又默认初始化了一个这个类的对象，那就gg，编译器报错。并且下面这段代码也会报错：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">test</span>(<span class="type">int</span> _a):<span class="built_in">a</span>(_a)&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    test a;</span><br><span class="line">    <span class="type">int</span> b;</span><br><span class="line">    <span class="built_in">test1</span>(<span class="type">int</span> i):<span class="built_in">b</span>(i)&#123;&#125;  <span class="comment">// 因为test1的构造函数test1（int i）体内实际会调用test的默认构造函数（编译器帮你干的），但是test又没有默认构造函数，所以gg</span></span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">test1 <span class="title">ab</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="杂"><a href="#杂" class="headerlink" title="杂"></a>杂</h2><ul>
+<li>内存的global区在程序的一开始会被清0，而local和heap区不会清0，所以这两个区域内存里的值是上一次的遗留物，也就是未知的值。</li>
+</ul>
 
     </div>
 
@@ -246,7 +285,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E7%88%B1%E6%83%85/" rel="tag"># 爱情</a>
+              <a href="/tags/C-C/" rel="tag"># C/C++</a>
           </div>
 
         
@@ -255,12 +294,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/" rel="prev" title="2.2 拷贝构造函数的构造操作">
-      <i class="fa fa-chevron-left"></i> 2.2 拷贝构造函数的构造操作
+    <a href="/2022/02/22/1-%E5%85%B3%E4%BA%8E%E5%AF%B9%E8%B1%A1/" rel="prev" title="1 关于对象">
+      <i class="fa fa-chevron-left"></i> 1 关于对象
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/02/27/3-6-%E6%8C%87%E5%90%91Data-Members%E7%9A%84%E6%8C%87%E9%92%88/" rel="next" title="3.6 指向Data Members的指针">
-      3.6 指向Data Members的指针 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/" rel="next" title="2.2 拷贝构造函数的构造操作">
+      2.2 拷贝构造函数的构造操作 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -320,6 +359,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E6%98%AFdelete%E7%9A%84%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">什么时候默认构造函数是delete的？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%BC%9A%E5%B9%B2%E4%BB%80%E4%B9%88%E4%BA%8B%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">默认构造函数会干什么事？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9D%82"><span class="nav-number">3.</span> <span class="nav-text">杂</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

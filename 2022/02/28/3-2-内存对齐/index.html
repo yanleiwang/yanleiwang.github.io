@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="2020.11.14 与WL相恋.">
+  <meta name="description" content="类的大小≥所有数据成员的大小总和。原因是：  虚函数指针和虚基类指针的存在 内存对齐  内存对齐是什么？ 数据存储的内存地址，不能乱放，必须是某个值的整数倍。 还有就是假如是一个类对象的话，它内部的数据成员，也不是简单的一个挨着一个这样存储的，会有一些空白位置存在（也就是内部碎片）  为什么需要内存对齐 为了可移植性和提高处理器的性能。  1）平台原因（移植原因）：不是所有的硬件平台都能访问任意地">
 <meta property="og:type" content="article">
-<meta property="og:title" content="开端">
-<meta property="og:url" content="https://yanleiwang.github.io/2022/02/24/%E5%BC%80%E7%AB%AF/index.html">
+<meta property="og:title" content="3.2 内存对齐">
+<meta property="og:url" content="https://yanleiwang.github.io/2022/02/28/3-2-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/index.html">
 <meta property="og:site_name" content="Love WL Forever">
-<meta property="og:description" content="2020.11.14 与WL相恋.">
+<meta property="og:description" content="类的大小≥所有数据成员的大小总和。原因是：  虚函数指针和虚基类指针的存在 内存对齐  内存对齐是什么？ 数据存储的内存地址，不能乱放，必须是某个值的整数倍。 还有就是假如是一个类对象的话，它内部的数据成员，也不是简单的一个挨着一个这样存储的，会有一些空白位置存在（也就是内部碎片）  为什么需要内存对齐 为了可移植性和提高处理器的性能。  1）平台原因（移植原因）：不是所有的硬件平台都能访问任意地">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2022-02-24T13:20:36.000Z">
-<meta property="article:modified_time" content="2022-02-24T13:27:56.859Z">
+<meta property="article:published_time" content="2022-02-27T16:11:30.000Z">
+<meta property="article:modified_time" content="2022-02-27T16:13:14.724Z">
 <meta property="article:author" content="wyl">
-<meta property="article:tag" content="爱情">
+<meta property="article:tag" content="C&#x2F;C++">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="https://yanleiwang.github.io/2022/02/24/%E5%BC%80%E7%AB%AF/">
+<link rel="canonical" href="https://yanleiwang.github.io/2022/02/28/3-2-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>开端 | Love WL Forever</title>
+  <title>3.2 内存对齐 | Love WL Forever</title>
   
 
 
@@ -189,7 +189,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/24/%E5%BC%80%E7%AB%AF/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/28/3-2-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -202,7 +202,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          开端
+          3.2 内存对齐
         </h1>
 
         <div class="post-meta">
@@ -213,7 +213,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-02-24 21:20:36 / 修改时间：21:27:56" itemprop="dateCreated datePublished" datetime="2022-02-24T21:20:36+08:00">2022-02-24</time>
+              <time title="创建时间：2022-02-28 00:11:30 / 修改时间：00:13:14" itemprop="dateCreated datePublished" datetime="2022-02-28T00:11:30+08:00">2022-02-28</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -221,7 +221,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%94%9F%E6%B4%BB/" itemprop="url" rel="index"><span itemprop="name">生活</span></a>
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
                 </span>
             </span>
 
@@ -236,7 +236,26 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p><strong>2020.11.14 与WL相恋.</strong></p>
+        <p>类的大小<strong>≥</strong>所有数据成员的大小总和。原因是：</p>
+<ol>
+<li>虚函数指针和虚基类指针的存在</li>
+<li>内存对齐</li>
+</ol>
+<h3 id="内存对齐是什么？"><a href="#内存对齐是什么？" class="headerlink" title="内存对齐是什么？"></a>内存对齐是什么？</h3><ul>
+<li>数据存储的内存地址，不能乱放，必须是某个值的整数倍。</li>
+<li>还有就是假如是一个类对象的话，它内部的数据成员，也不是简单的一个挨着一个这样存储的，会有一些空白位置存在（也就是内部碎片）</li>
+</ul>
+<h3 id="为什么需要内存对齐"><a href="#为什么需要内存对齐" class="headerlink" title="为什么需要内存对齐"></a>为什么需要内存对齐</h3><ul>
+<li><p>为了可移植性和提高处理器的性能。</p>
+</li>
+<li><p>1）平台原因（移植原因）：不是所有的硬件平台都能访问任意地址上的任意数据的；某些硬件平台只能在某些地址处取某些特定类型的数据，否则抛出硬件异常。</p>
+<p>2）性能原因：数据结构（尤其是栈）应该尽可能地在自然边界上对齐。原因在于，为了访问未对齐的内存，处理器可能需要作两次内存访问；而对齐的内存访问仅需要一次访问。比如假如这个处理器只能访问偶数的内存，然后一次只能读4个字节，那么如果我一个int放在了奇数位置上，那么只能读两次，然后拼接起来。</p>
+</li>
+</ul>
+<h3 id="detail"><a href="#detail" class="headerlink" title="detail"></a>detail</h3><ul>
+<li>Linux GCC编译器环境下， 对于基本类型，起始位置要求是该类型大于与对齐系数较小值的整数倍。对于类类型， 除了起始位置有要求，每个数据成员相对于起始位置的偏移量也必须是类型大小与对齐系数较小值的整数倍。不是整数倍前面空出内存，直到偏移量是整数倍为止。同时考虑到为了让该类型的数组每个元素也符合对齐要求（起始位置），最后一个数据成员后面也可能会加一些空白</li>
+<li>可以用#pragma pack(2) 来指定对齐系数， Linux GCC 默认是4.</li>
+</ul>
 
     </div>
 
@@ -246,7 +265,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E7%88%B1%E6%83%85/" rel="tag"># 爱情</a>
+              <a href="/tags/C-C/" rel="tag"># C/C++</a>
           </div>
 
         
@@ -255,12 +274,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/" rel="prev" title="2.2 拷贝构造函数的构造操作">
-      <i class="fa fa-chevron-left"></i> 2.2 拷贝构造函数的构造操作
+    <a href="/2022/02/28/3-1-%E7%A9%BA%E7%B1%BB%E7%9A%84%E5%A4%A7%E5%B0%8F/" rel="prev" title="3.1 空类的大小">
+      <i class="fa fa-chevron-left"></i> 3.1 空类的大小
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/02/27/3-6-%E6%8C%87%E5%90%91Data-Members%E7%9A%84%E6%8C%87%E9%92%88/" rel="next" title="3.6 指向Data Members的指针">
-      3.6 指向Data Members的指针 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/02/28/3-3-%E7%B1%BB%E5%86%85%E9%83%A8%E7%9A%84%E7%B1%BB%E5%9E%8B%E5%88%AB%E5%90%8D%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%94%BE%E5%9C%A8%E5%BC%80%E5%A4%B4/" rel="next" title="3.3 类内部的类型别名为什么需要放在开头">
+      3.3 类内部的类型别名为什么需要放在开头 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -320,6 +339,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">内存对齐是什么？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="nav-number">2.</span> <span class="nav-text">为什么需要内存对齐</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#detail"><span class="nav-number">3.</span> <span class="nav-text">detail</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
