@@ -20,13 +20,15 @@
     var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="article">
+  <meta name="description" content="什么情况会调用copy构造函数? 用一个对象作为参数初始化另一个对象时. 传值的方式调用一个函数时.  传值的方式从函数返回一个值时. (不考虑返回值优化)  编译器合成的拷贝构造函数机制 如果不显式定义拷贝构造函数或者 A(const &amp;A rhs) &#x3D; default， 编译器会生成一个合成的拷贝构造函数，除了一种特殊情况：  当类的数据类成员析构函数（拷贝构造函数）是删除的或不可访问">
+<meta property="og:type" content="article">
 <meta property="og:title" content="2.2 拷贝构造函数的构造操作">
 <meta property="og:url" content="https://yanleiwang.github.io/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/index.html">
 <meta property="og:site_name" content="Love WL Forever">
+<meta property="og:description" content="什么情况会调用copy构造函数? 用一个对象作为参数初始化另一个对象时. 传值的方式调用一个函数时.  传值的方式从函数返回一个值时. (不考虑返回值优化)  编译器合成的拷贝构造函数机制 如果不显式定义拷贝构造函数或者 A(const &amp;A rhs) &#x3D; default， 编译器会生成一个合成的拷贝构造函数，除了一种特殊情况：  当类的数据类成员析构函数（拷贝构造函数）是删除的或不可访问">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-22T15:55:45.000Z">
-<meta property="article:modified_time" content="2022-03-08T15:28:55.694Z">
+<meta property="article:modified_time" content="2022-03-10T14:05:35.757Z">
 <meta property="article:author" content="wyl">
 <meta property="article:tag" content="C&#x2F;C++">
 <meta name="twitter:card" content="summary">
@@ -217,7 +219,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-08 23:28:55" itemprop="dateModified" datetime="2022-03-08T23:28:55+08:00">2022-03-08</time>
+                <time title="修改时间：2022-03-10 22:05:35" itemprop="dateModified" datetime="2022-03-10T22:05:35+08:00">2022-03-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -240,7 +242,34 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h2 id="什么情况会调用copy构造函数"><a href="#什么情况会调用copy构造函数" class="headerlink" title="什么情况会调用copy构造函数?"></a>什么情况会调用copy构造函数?</h2><ul>
+<li>用一个对象作为参数初始化另一个对象时.</li>
+<li>传值的方式调用一个函数时. </li>
+<li>传值的方式从函数返回一个值时. (不考虑返回值优化)</li>
+</ul>
+<h2 id="编译器合成的拷贝构造函数机制"><a href="#编译器合成的拷贝构造函数机制" class="headerlink" title="编译器合成的拷贝构造函数机制"></a>编译器合成的拷贝构造函数机制</h2><p> 如果不显式定义拷贝构造函数或者 <code>A(const &amp;A rhs) = default</code>， 编译器会生成一个合成的拷贝构造函数，除了一种特殊情况：</p>
+<ul>
+<li>当类的数据类成员析构函数（拷贝构造函数）是删除的或不可访问的，这个类的copy构造函数是delete的。</li>
+</ul>
+<p>合成的拷贝构造函数其整体思路是用 default memberwise initialization 实现的，具体点就是以一个个member的搞，对于内置类型的（int，指针，数组）是以bitwise copy（位逐次拷贝，就是一个个位复制）实现的，而对于类类型，则是递归的调用的memberwise initialization实现的。</p>
+<p>比如，如下Word类</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Word</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">     ...<span class="comment">//不存在explicit copy constructor</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> _occurs;</span><br><span class="line">    String _word;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>一个Word对象的编译器合成拷贝构造函数会拷贝其内置类型的 _occurs，然后对String member执行递归式memberwise initialization。</p>
+<p>类似于默认构造函数，C++亦把拷贝构造函数区分为trivial（无用）与non-trivial（有用）两种，只有non-trivial的实体才会被合成于程序之中。</p>
+<p>trivial 拷贝构造函数，其实就是bitwise copy，把被拷贝对象的内存空间原样拷贝过来，并不调用copy构造函数, 可能的实现方式如利用memcpy等, 因此效率高, 复制出的对象和原对象完全相同.</p>
+<h3 id="什么时候是有用拷贝构造函数？"><a href="#什么时候是有用拷贝构造函数？" class="headerlink" title="什么时候是有用拷贝构造函数？"></a>什么时候是有用拷贝构造函数？</h3><p>当合成拷贝构造函数不能表现为按位逐次拷贝语义的时候。</p>
+<ol>
+<li>当类含有类对象成员（有一个即可，不用要求全部）, 且这个成员有有用的copy构造函数或者是显式定义的</li>
+<li>当类继承自一个基类, 并且基类有有用的copy构造函数或者是显式定义的copy构造函数</li>
+<li>当类含有虚函数时</li>
+<li>当类有虚基类时.</li>
+</ol>
+<p>对于1和2, 由于copy对象时, 要copy数据成员和基类, 既然它们提供了copy构造函数, 就可以认为需要在它们的copy构造函数中进行某些bitwise copy无法实现的操作, 因此不能采用bitwise copy.</p>
+<p>对于3,  由于含有虚函数, 所以需要初始化对象的vptr, 而vptr的值不一定等于被拷贝对象的vptr值, 因为我们可以用子类对象初始化父类对象， 此时子类对象的vptr指向的子类的虚函数表，与父类的不同，所以bitwise不能满足需求.</p>
+<p>对于4, 由于含有虚基类, 情况同上，可以用子类对象初始化父类对象，子类对象和父类对象的内存布局不同。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>一个编译器合成的copy构造函数，大部分情况下是bitwise copy，但是当我们有个类对象成员，它的copy构造函数不是bitwise copy的时候，（类对象成员包括基类），或者当类有虚函数，虚基类的时候，不能对虚函数指针和虚基类指针简单粗暴的bitwise copy，这时候会对那些刺头进行 不是bitwise copy， 具体做法是调用  类对象成员的 “有用” copy构造函数 对虚函数指针和虚基类指针进行显式设定。</p>
+
     </div>
 
     
@@ -262,8 +291,8 @@
       <i class="fa fa-chevron-left"></i> 2.1 默认构造函数的构造操作
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/02/24/%E5%BC%80%E7%AB%AF/" rel="next" title="开端">
-      开端 <i class="fa fa-chevron-right"></i>
+    <a href="/2022/02/23/2-3-1-%E4%BC%A0%E5%80%BC%E5%8F%82%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84/" rel="next" title="2.3.1 传值参数是如何实现的">
+      2.3.1 传值参数是如何实现的 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -323,6 +352,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%BC%9A%E8%B0%83%E7%94%A8copy%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">1.</span> <span class="nav-text">什么情况会调用copy构造函数?</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E5%90%88%E6%88%90%E7%9A%84%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E6%9C%BA%E5%88%B6"><span class="nav-number">2.</span> <span class="nav-text">编译器合成的拷贝构造函数机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%98%AF%E6%9C%89%E7%94%A8%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">什么时候是有用拷贝构造函数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">2.2.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -336,20 +366,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>

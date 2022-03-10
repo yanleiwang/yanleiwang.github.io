@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="存储持续性C++使用四种不同的方案来存储数据，这些方案的区别在于数据的存储持续性和存储位置。  自动存储持续性。局部变量的存储持续性为自动，存储在函数栈中，在程序执行所属函数时被创建，执行完时所用内存被释放。 静态存储性。全局变量和使用static定义的变量的存储持续性都为静态，存储区域为全局数据区（细分为静态存储区、data区和bss区），在程序整个运行过程中都存在。 线程存储持续性。使用关键字">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++存储说明符和CV限定符（static，extern，thread_local，mutable，const，volatile）">
+<meta property="og:url" content="https://yanleiwang.github.io/2022/03/10/C-%E5%AD%98%E5%82%A8%E8%AF%B4%E6%98%8E%E7%AC%A6%E5%92%8Ccv-%E9%99%90%E5%AE%9A%E7%AC%A6/index.html">
+<meta property="og:site_name" content="Love WL Forever">
+<meta property="og:description" content="存储持续性C++使用四种不同的方案来存储数据，这些方案的区别在于数据的存储持续性和存储位置。  自动存储持续性。局部变量的存储持续性为自动，存储在函数栈中，在程序执行所属函数时被创建，执行完时所用内存被释放。 静态存储性。全局变量和使用static定义的变量的存储持续性都为静态，存储区域为全局数据区（细分为静态存储区、data区和bss区），在程序整个运行过程中都存在。 线程存储持续性。使用关键字">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-03-10T07:54:24.000Z">
+<meta property="article:modified_time" content="2022-03-10T11:42:59.605Z">
+<meta property="article:author" content="wyl">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://yanleiwang.github.io/2022/03/10/C-%E5%AD%98%E5%82%A8%E8%AF%B4%E6%98%8E%E7%AC%A6%E5%92%8Ccv-%E9%99%90%E5%AE%9A%E7%AC%A6/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++存储说明符和CV限定符（static，extern，thread_local，mutable，const，volatile） | Love WL Forever</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Love WL Forever</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/10/C-%E5%AD%98%E5%82%A8%E8%AF%B4%E6%98%8E%E7%AC%A6%E5%92%8Ccv-%E9%99%90%E5%AE%9A%E7%AC%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++存储说明符和CV限定符（static，extern，thread_local，mutable，const，volatile）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-10 15:54:24 / 修改时间：19:42:59" itemprop="dateCreated datePublished" datetime="2022-03-10T15:54:24+08:00">2022-03-10</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C-C-%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">C/C++基础</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="存储持续性"><a href="#存储持续性" class="headerlink" title="存储持续性"></a>存储持续性</h2><p>C++使用四种不同的方案来存储数据，这些方案的区别在于数据的存储持续性和存储位置。</p>
+<ul>
+<li>自动存储持续性。局部变量的存储持续性为自动，存储在函数栈中，在程序执行所属函数时被创建，执行完时所用内存被释放。</li>
+<li>静态存储性。全局变量和使用static定义的变量的存储持续性都为静态，存储区域为全局数据区（细分为静态存储区、data区和bss区），在程序整个运行过程中都存在。</li>
+<li>线程存储持续性。使用关键字thread_local声明的变量，其生命周期与所属的线程一样长。</li>
+<li>动态存储持续性。存储在堆中的内存，除非显式释放（delete），否则在程序整个运行过程中都存在。</li>
+</ul>
+<h2 id="链接性"><a href="#链接性" class="headerlink" title="链接性"></a>链接性</h2><p><strong>链接性</strong>描述了名称（变量和函数）如何在不同的编译单元（源文件）间共享，C++一共有三种链接性：</p>
+<ul>
+<li>内部链接性，具有该链接性的名称只能在定义它的编译单元内可见</li>
+<li>外部链接性，具有该链接性的名称可以在所有文件间共享。</li>
+<li>无链接性，只能在当前函数或代码块中访问。（其实也就是局部变量具有该链接性）</li>
+</ul>
+<h2 id="普通变量和函数的存储持续性和链接性"><a href="#普通变量和函数的存储持续性和链接性" class="headerlink" title="普通变量和函数的存储持续性和链接性"></a>普通变量和函数的存储持续性和链接性</h2><ul>
+<li>一个普通的全局变量，生命周期是全局的，整个程序的运行过程中都存在，存储区域为全局数据区，具有外部链接性。由于全局数据区的内存，在程序启动的时候，会被全部初始为0，假如变量没有显示初始化，如果是类类型，则会执行默认构造函数；如果是内置类型，其值为0.</li>
+<li>一个普通的全局函数，生命周期是全局的，具有外部链接性</li>
+<li>一个普通的局部变量，存储在函数栈中，在程序执行所属函数时被创建，执行完时所用内存被释放，无链接性。</li>
+</ul>
+<p>变量和函数可以加存储说明符和CV限定符改变其存储持续性和链接性。</p>
+<h2 id="存储说明符"><a href="#存储说明符" class="headerlink" title="存储说明符"></a>存储说明符</h2><p>C++一共有五种存储说明符可以改变存储持续性和链接性（在同一个声明中不能使用多个说明符，thread_local除外，它可与static或extern结合使用）：</p>
+<ul>
+<li>register</li>
+<li>static</li>
+<li>extern</li>
+<li>thread_local</li>
+<li>mutable</li>
+</ul>
+<h3 id="register"><a href="#register" class="headerlink" title="register"></a>register</h3><ul>
+<li><p>只有局部变量才能用register修饰。</p>
+</li>
+<li><p>在C和C++11之前，该关键字的作用是建议编译器使用CPU寄存器来存储该局部变量。而C++11中，该作用已经失去了，只是显式地指出该变量是局部变量，然而也只有局部变量才能用register关键字修饰，所以其实就是<strong>没用</strong>，之所以还保留，是为了避免使用了该关键字的现有代码非法。</p>
+</li>
+</ul>
+<h3 id="static"><a href="#static" class="headerlink" title="static"></a>static</h3><p>static关键字可以修饰一个函数，一个变量，也可以修饰一个类成员</p>
+<ul>
+<li>当修饰一个全局变量或者一个全局函数的时候，修改的是这些符号的链接，从外部链接性变为内部链接性，这些符号只能在定义它的源文件中被使用，其他的源文件不能被使用，而存储位置和生命周期都不变。<ul>
+<li>所以我们可以在两个源文件里定义两个同名的static全局变量&#x2F;函数，而不会产生重定义的编译错误，这两个static变量的内存地址是不同的。</li>
+<li><strong>static全局变量&#x2F;函数应该定义在源文件中。</strong></li>
+</ul>
+</li>
+<li>当修饰一个局部变量的时候，改变了变量的存储位置和生命周期，普通的局部变量存储位置是在栈中的，并且在函数调用完之后被自动释放，而static局部变量的存储位置是在静态存储区，假如未经初始化会被自动初始化为0。static局部变量在函数的第一次执行的时候被创建，程序结束的时候被销毁。它的作用域不变。</li>
+<li>假如修饰的是一个类成员，表示的是这个数据成员或者成员函数是属于类的，而不是某个对象的，所有对象共享一个静态成员，并且静态成员函数，由于没有this指针，所以不能访问类的非static成员。</li>
+</ul>
+<h3 id="extern"><a href="#extern" class="headerlink" title="extern"></a>extern</h3><p>extern一共有以下两种作用。</p>
+<h4 id="extern-变量"><a href="#extern-变量" class="headerlink" title="extern 变量"></a>extern 变量</h4><p> 此时extern的作用是声明。<code>extern int a</code>告诉编译器，有一个int类型的变量a定义在其他地方，如果有调用请去其他文件中查找定义。</p>
+<p>由于一个全局变量只能被定义一次，否则会出现重定义链接错误。假如我们想在多个源文件中使用这个全局变量，就需要在使用该变量的其他所有文件中，使用extern声明它。具体的用法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A.h</span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> a;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//main.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	cout &lt;&lt; a &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其实就是在一个头文件A.h中声明它，在对应的源文件A.cpp中定义它，而在其他使用该变量的文件中include A.h这个头文件。</p>
+<ul>
+<li><code>extern int a = 1;</code> 是错误的，不应该在声明的时候进行初始化，否则声明为定义，跟<code>int a = 1</code>的效果是一致的</li>
+</ul>
+<h4 id="extern-“C”"><a href="#extern-“C”" class="headerlink" title="extern “C”"></a>extern “C”</h4><ul>
+<li>被 extern 限定的函数或变量是 extern 类型的</li>
+<li>被 <code>extern &quot;C&quot;</code> 修饰的变量和函数是按照 C 语言方式编译和链接的</li>
+</ul>
+<p><code>extern &quot;C&quot;</code> 的作用是让 C++ 编译器将 <code>extern &quot;C&quot;</code> 声明的代码当作 C 语言代码处理，可以避免 C++ 因符号修饰导致代码不能和C语言库中的符号进行链接的问题。</p>
+<p>extern “C” 使用</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> *<span class="title">memset</span><span class="params">(<span class="type">void</span> *, <span class="type">int</span>, <span class="type">size_t</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="thread-local"><a href="#thread-local" class="headerlink" title="thread_local"></a>thread_local</h3><p>thread_local修饰的变量表示该变量的持续性与所属线程的持续性相同。</p>
+<p><strong>TODO 待补充</strong></p>
+<h3 id="mutable"><a href="#mutable" class="headerlink" title="mutable"></a>mutable</h3><p>可以用它来指出，即使类的对象为const，其某个成员也可以被修改。比如</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">A</span>():<span class="built_in">val</span>(<span class="number">0</span>)&#123;&#125;</span><br><span class="line">	<span class="keyword">mutable</span> <span class="type">int</span> val;</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">()</span> <span class="type">const</span> </span>&#123; val++;&#125;; <span class="comment">// 1)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> A tmp;</span><br><span class="line">tmp.val = <span class="number">2</span>; <span class="comment">// 2)</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>因为val被mutable关键字修饰，所以1）和2）操作都是允许的。</p>
+<h2 id="CV限定符"><a href="#CV限定符" class="headerlink" title="CV限定符"></a>CV限定符</h2><p>C++ CV限定符：</p>
+<ul>
+<li>const</li>
+<li>volatile</li>
+</ul>
+<h3 id="const"><a href="#const" class="headerlink" title="const"></a>const</h3><ul>
+<li><p>可以修饰变量，说明该变量不可以被改变</p>
+<ul>
+<li><p>当修饰一个全局变量的时候，会改变其链接性。一个普通的全局变量具有外部链接性，而const全局变量的链接性为内部的，也就是说const全局变量只能在定义它的源文件中被使用，其他的源文件不能被使用。</p>
+<p>如果希望每个文件都有自己的一组常量，而不是所有文件共享一组常量，那么可以将常量全局变量定义放在头文件中。</p>
+<p>如果希望常量的链接性为外部的，也就是多个文件共享一个常量，可以加上extern关键词，具体的就是：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A.h</span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">const</span> <span class="type">int</span> a;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//main.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	cout &lt;&lt; a &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>修饰指针，分为指向常量的指针（<code>const int* a</code>）和自身是常量的指针（常量指针，<code>int * const a</code>）；</p>
+</li>
+<li><p>修饰引用，指向常量的引用（<code>const int&amp; a</code>），经常用于函数的形参类型，即避免了拷贝，又避免了函数对值的修改</p>
+</li>
+<li><p>修饰成员函数，说明该成员函数内不能修改成员变量。其实质是改变了成员函数的隐藏参数this，从<code>类名 * const</code> 变为 <code>const 类名 * const</code></p>
+</li>
+</ul>
+<h3 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="type">int</span> i = <span class="number">10</span>; </span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>volatile 关键字是一种类型修饰符，用它声明的类型变量表示即使程序代码没有对内存单元进行修改，其值也可能发生变化（被硬件、其它线程等）可以被某些编译器未知的因素（操作系统、硬件、其它线程等）更改。所以使用 volatile 告诉编译器不应对这样的对象进行优化。</li>
+<li>使用 volatile 告诉编译器不应对这样的对象的值缓存到寄存器中，每次访问时都必须从内存中取出值。</li>
+<li>const 可以是 volatile （如只读的状态寄存器）</li>
+<li>指针可以是 volatile</li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>C++ primer plus 9.1~9.2.7</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C-C/" rel="tag"># C/C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/03/10/c-%E5%90%8D%E5%AD%97%E6%9F%A5%E6%89%BE/" rel="prev" title="c++ 名字查找">
+      <i class="fa fa-chevron-left"></i> c++ 名字查找
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E6%8C%81%E7%BB%AD%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">存储持续性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E6%80%A7"><span class="nav-number">2.</span> <span class="nav-text">链接性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E5%8F%98%E9%87%8F%E5%92%8C%E5%87%BD%E6%95%B0%E7%9A%84%E5%AD%98%E5%82%A8%E6%8C%81%E7%BB%AD%E6%80%A7%E5%92%8C%E9%93%BE%E6%8E%A5%E6%80%A7"><span class="nav-number">3.</span> <span class="nav-text">普通变量和函数的存储持续性和链接性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E8%AF%B4%E6%98%8E%E7%AC%A6"><span class="nav-number">4.</span> <span class="nav-text">存储说明符</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#register"><span class="nav-number">4.1.</span> <span class="nav-text">register</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#static"><span class="nav-number">4.2.</span> <span class="nav-text">static</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#extern"><span class="nav-number">4.3.</span> <span class="nav-text">extern</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#extern-%E5%8F%98%E9%87%8F"><span class="nav-number">4.3.1.</span> <span class="nav-text">extern 变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#extern-%E2%80%9CC%E2%80%9D"><span class="nav-number">4.3.2.</span> <span class="nav-text">extern “C”</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#thread-local"><span class="nav-number">4.4.</span> <span class="nav-text">thread_local</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mutable"><span class="nav-number">4.5.</span> <span class="nav-text">mutable</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CV%E9%99%90%E5%AE%9A%E7%AC%A6"><span class="nav-number">5.</span> <span class="nav-text">CV限定符</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#const"><span class="nav-number">5.1.</span> <span class="nav-text">const</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#volatile"><span class="nav-number">5.2.</span> <span class="nav-text">volatile</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wyl</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wyl</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

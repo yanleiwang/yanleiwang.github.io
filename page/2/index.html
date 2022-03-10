@@ -183,7 +183,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/28/2-3-NRV-named-return-value/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/28/4-1-%E5%90%84%E7%A7%8D%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%88%E6%99%AE%E9%80%9A%EF%BC%8Cstatic%EF%BC%8C%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%89/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -197,7 +197,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/02/28/2-3-NRV-named-return-value/" class="post-title-link" itemprop="url">2.3 NRV(named return value)</a>
+            <a href="/2022/02/28/4-1-%E5%90%84%E7%A7%8D%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%88%E6%99%AE%E9%80%9A%EF%BC%8Cstatic%EF%BC%8C%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%89/" class="post-title-link" itemprop="url">4.1 各种成员函数的调用方式（普通，static，虚函数）</a>
         </h2>
 
         <div class="post-meta">
@@ -207,14 +207,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-02-28 19:33:49" itemprop="dateCreated datePublished" datetime="2022-02-28T19:33:49+08:00">2022-02-28</time>
+              <time title="创建时间：2022-02-28 23:11:44" itemprop="dateCreated datePublished" datetime="2022-02-28T23:11:44+08:00">2022-02-28</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-03 09:35:17" itemprop="dateModified" datetime="2022-03-03T09:35:17+08:00">2022-03-03</time>
+                <time title="修改时间：2022-03-05 22:29:07" itemprop="dateModified" datetime="2022-03-05T22:29:07+08:00">2022-03-05</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -237,28 +237,120 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h3 id="按值返回的函数是如何实现的？"><a href="#按值返回的函数是如何实现的？" class="headerlink" title="按值返回的函数是如何实现的？"></a><strong>按值返回的函数是如何实现的</strong>？</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">X <span class="title">bar</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	X xx;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> xx;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>编译器的经典做法是<strong>在函数参数里面新加一个引用的参数，然后通过拷贝构造函数来把返回值拷贝到这个参数里</strong>。</p>
-<p>也就是一个双阶段转化：</p>
+          <blockquote>
+<p>c++支持三种类型的成员函数，分别为static,nostatic,virtual。每一种调用方式都不尽相同。</p>
+</blockquote>
+<h3 id="非静态成员函数-（Nonstatic-Member-Functions）"><a href="#非静态成员函数-（Nonstatic-Member-Functions）" class="headerlink" title="非静态成员函数 （Nonstatic Member Functions）"></a>非静态成员函数 （Nonstatic Member Functions）</h3><ul>
+<li><p>保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。</p>
+</li>
+<li><p>事实上在c++中非静态成员函数（nostatic member function）与普通函数的调用也确实具有相同的效率。因为编译器内部会将成员函数等价转换为非成员函数，所以本质上非静态成员函数就如同一个普通函数, 如一个非静态成员函数：</p>
+<p><code>X float Point::X()</code>  就相当于一个普通函数</p>
+<p><code>float X(Point * const this)</code></p>
+<p>编译器具体是这样做的:</p>
 <ul>
-<li>给该函数添加一个额外参数，类型是返回值类型的一个reference，用来放置被拷贝构造而得的返回值。</li>
-<li>在return指令之前，插入一个拷贝构造函数，将返回值当做这个新增参数的初值。然后函数返回void。</li>
-</ul>
-<p>即 上述bar函数代码转换成：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(X&amp; result)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	X xx;</span><br><span class="line">	<span class="comment">// ... </span></span><br><span class="line">    </span><br><span class="line">    result.X::<span class="built_in">X</span>(xx);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 因此对于每一个bar函数调用操作， 编译器都会进行转换</span></span><br><span class="line">X x1 = <span class="built_in">bar</span>(); </span><br><span class="line"><span class="comment">// 转换成：</span></span><br><span class="line">X x1;</span><br><span class="line"><span class="built_in">bar</span>(x1);</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="NRV-（Named-Return-Value）-优化"><a href="#NRV-（Named-Return-Value）-优化" class="headerlink" title="NRV （Named Return Value） 优化"></a>NRV （Named Return Value） 优化</h3><p>上面的优化中，一共构造了两个X对象：x1和xx， 而xx其实只是局部对象，生命周期转瞬即逝。而且对于bar()的调用者来说，根本就没有xx这个对象，调用者想要的只有x1。这样的实现能不能够将其优化变得更快呢？编译器有一种优化方式（NRV优化），直接用x1替代xx。编译器转换后的伪代码如下。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(X&amp; result)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="comment">// 调用result的默认构造函数  </span></span><br><span class="line">    result.X::<span class="built_in">X</span>();  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 处理result  </span></span><br><span class="line">    <span class="keyword">return</span>;  </span><br><span class="line">&#125;  </span><br></pre></td></tr></table></figure>
-
-<p>NRV优化后的实现，比原来的实现省去了一个X类的临时对象xx的构造和析构操作，还有一个将结果拷贝构造到result的操作，但是多了一个<code>result.X::X();  </code> 的默认构造函数。</p>
-<ul>
-<li><p>可能带来的问题：</p>
-<ul>
-<li>NRV优化会导致原本预想中的调用拷贝构造函数变成调用默认构造函数，<br>一旦这个时候，拷贝构造函数和默认构造函数提供的功能不同，就可能会出问题。</li>
+<li><p>改写成员函数的签名，使得其可以接受一个额外参数，这个额外参数即是this指针：</p>
+</li>
+<li><p>&#96;&#96;&#96;c++<br>float Point::X();<br>&#x2F;&#x2F;成员函数X被插入额外参数this<br>float Point:: X(Point* const this );<br>&#x2F;&#x2F; 当然如果成员函数是const的，插入的参数类型将为 const Point * const 类型。（指向常量的常量指针）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  + 将每一个对非静态数据成员的操作都改写为经过this操作。</span><br><span class="line"></span><br><span class="line">  + 将成员函数写成一个外部函数，对函数名进行名字修饰，使之成为独一无二的名称。</span><br><span class="line"></span><br><span class="line">+ 可以看出，将一个成员函数改写成一个外部函数的关键在于两点：</span><br><span class="line"></span><br><span class="line">  + 一是给函数提供一个可以直接读写成员数据的通道；</span><br><span class="line">  + 二是解决好有可能带来的名字冲突。</span><br><span class="line"></span><br><span class="line">  第一点通过给函数提供一个额外的指针参数来解决</span><br><span class="line"></span><br><span class="line">  第二点则是通过一定的规则将名字转换，使之独一无二。</span><br><span class="line"></span><br><span class="line">  由此可以做出一点总结：**一个成员函数实际上就是一个被插入了一个接受其类的常量指针类型的额外参数的非成员函数。**</span><br><span class="line"></span><br><span class="line">  当然还要额外对函数的名称进行处理。额外插入的参数用来访问数据成员，而名称的特殊处理用来避免名字冲突。</span><br><span class="line"></span><br><span class="line">### 静态成员函数(Static Member Functions)</span><br><span class="line"></span><br><span class="line">静态成员函数的主要特性：没有this指针，其他一些次要特性：</span><br><span class="line"></span><br><span class="line">+ 不能够直接存取其类中的非静态成员（nostatic members），包括不能调用非静态成员函数(Nonstatic Member Functions)。</span><br><span class="line">+ 不能够声明为 const、voliatile或virtual。</span><br><span class="line">+ 它不需经由对象调用，当然，通过对象调用也被允许。</span><br><span class="line"></span><br><span class="line">​	除了缺乏一个this指针他与非静态成员函数没有太大的差别。在这里通过对象调用和通过指针或引用调用，将被转化为同样的调用代码。</span><br><span class="line"></span><br><span class="line">### 虚函数</span><br><span class="line"></span><br><span class="line">如果一个函数是虚函数，那么当用指针或引用进行调用时，会被编译器重写，比如：</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line">// p-&gt;function()</span><br><span class="line">//将转化为</span><br><span class="line">(*p-&gt;vptr[1])(p);</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
-<li><p>早期C++， NRV优化和拷贝构造函数是有关系的，只有定义了拷贝构造函数才会开启NRV优化，但现代编译器NRV优化的开启一般都与拷贝构造函数没有关系。</p>
+</ul>
+<p>也就是通过虚函数指针找到虚函数表，然后根据固定的表项找到实际要执行的虚函数。</p>
+<ul>
+<li><p>其中vptr为指向虚函数表的指针，它由编译器产生。<strong>vptr也要进行名字修饰，因为一个继承体系可能有多个vptr。</strong></p>
+</li>
+<li><p>1是虚函数在虚函数表中的索引，通过它关联到虚函数function().</p>
+</li>
+<li><p>何时发生这种转换？</p>
+<ul>
+<li>当通过指针或者引用调用的时候，因为要调用的函数实体无法在编译期决定，必需待到执行期才能获得，</li>
+<li>但是当我们通过对象（不是引用，也不是指针）来调用的时候，<br>就不会发生，因为在编译器要调用的函数实体已经被决定。此时调用的就是根据指针的静态类型决定的函数。</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/28/4-0-%E5%90%8D%E5%AD%97%E4%BF%AE%E9%A5%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/28/4-0-%E5%90%8D%E5%AD%97%E4%BF%AE%E9%A5%B0/" class="post-title-link" itemprop="url">4.0 名字修饰</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-02-28 22:54:09 / 修改时间：23:26:30" itemprop="dateCreated datePublished" datetime="2022-02-28T22:54:09+08:00">2022-02-28</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>c++会对一些函数、变量的名字做修改，以达到让这个名字独一无二的目的，实现函数重载，子类的数据成员隐藏同名的父类数据成员，这两种目的。</p>
+<ul>
+<li><p>会对哪些名字进行修改？</p>
+<ul>
+<li>普通函数，类成员函数（包括普通成员函数，static成员函数，虚函数）<ul>
+<li>根据函数的参数列表（参数的个数，参数的类型）+ 函数名， <strong>不包括返回类型</strong></li>
+<li>这也是函数重载实现的机制，同名但是实际不同名（因为参数列表不一样）。</li>
+</ul>
+</li>
+<li>类的数据成员<ul>
+<li>根据类名 + 数据成员名</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>使用 extern C 会压抑名字修饰</p>
 </li>
 </ul>
 
@@ -660,7 +752,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/23/2-4-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%97%E8%A1%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -674,7 +766,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">2.2 拷贝构造函数的构造操作</a>
+            <a href="/2022/02/23/2-4-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%88%9D%E5%A7%8B%E5%8C%96%E5%88%97%E8%A1%A8/" class="post-title-link" itemprop="url">2.4 构造函数初始化列表</a>
         </h2>
 
         <div class="post-meta">
@@ -684,14 +776,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-02-22 23:55:45" itemprop="dateCreated datePublished" datetime="2022-02-22T23:55:45+08:00">2022-02-22</time>
+              <time title="创建时间：2022-02-23 23:55:45" itemprop="dateCreated datePublished" datetime="2022-02-23T23:55:45+08:00">2022-02-23</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-08 23:28:55" itemprop="dateModified" datetime="2022-03-08T23:28:55+08:00">2022-03-08</time>
+                <time title="修改时间：2022-03-10 23:16:16" itemprop="dateModified" datetime="2022-03-10T23:16:16+08:00">2022-03-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -714,112 +806,20 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/" class="post-title-link" itemprop="url">2.1 默认构造函数的构造操作</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-02-22 22:55:45" itemprop="dateCreated datePublished" datetime="2022-02-22T22:55:45+08:00">2022-02-22</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-08 23:28:05" itemprop="dateModified" datetime="2022-03-08T23:28:05+08:00">2022-03-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="什么时候默认构造函数是delete的？"><a href="#什么时候默认构造函数是delete的？" class="headerlink" title="什么时候默认构造函数是delete的？"></a>什么时候默认构造函数是delete的？</h2><p>当一个类，没有定义构造函数的时候，我们知道编译器会给你合成一个默认构造函数，但当有以下情况的时候，编译器并不会为你合成一个，也就是定义为删除：</p>
+          <p>构造函数的初始化列表的目的：一是可以提升效率，还有一个是有时候必须要这么做。</p>
 <ul>
-<li>类的某个数据类成员，它的析构函数是删除或者无法访问的（access level）</li>
-<li>类的某个数据类成员无法默认构造的时候<ul>
-<li>它就是无法默认构造，比如有个其他的构造函数了，却没定义默认构造函数.</li>
-<li>它是个引用，那么它必须得显式初始化，然后又没给它类内初始值</li>
-<li>它是个const，且没有类内初始值,  但是没有显式的默认构造函数.（const 对象必须要初始化，但是一个有显式的默认构造函数的const 也是ok的， 比如 const string s1； 不会报错. 它可能会有一个编译器合成的默认构造函数，但是对于const 对象来说，不顶事）</li>
+<li>提升效率：</li>
 </ul>
-</li>
-<li>以上数据类成员包括基类</li>
-</ul>
-<h2 id="默认构造函数会干什么事？"><a href="#默认构造函数会干什么事？" class="headerlink" title="默认构造函数会干什么事？"></a>默认构造函数会干什么事？</h2><p>编译器合成版本的默认构造函数会按以下顺序执行：</p>
-<ol>
-<li>调用虚基类构造函数（假如有虚基类）</li>
-<li>调用所有基类的构造函数，以基类的声明顺序为顺序（假如有基类）</li>
-<li>设定虚表指针的值，指向相应虚函数表。（假如有虚函数）</li>
-<li>调用所有数据成员的构造函数，以声明顺序为顺序（假如有类类型的数据成员）</li>
-</ol>
-<p><strong>补充：</strong></p>
+<p>因为编译器会对构造函数进行扩充，先对数据成员进行初始化（内置类型不初始化，类类型调用默认构造函数），再执行构造函数体。</p>
+<p>那么如果在函数体内对数据赋值，就会存在先进行初始化，然后进行赋值操作（可能还会有先构造一个临时对象，然后进行赋值操作，再析构这样的操作）</p>
+<p>而如果用初始化列表，就能初始化一步到位（实际编译器转换后的代码是先执行初始化列表（对应的构造函数），再执行函数体的代码）</p>
+<p>编译器生成的代码，初始化顺序是类定义时数据成员的声明顺序决定，不是由列表排列顺序决定。（不过，数据成员是内置类型的话无所谓，你放在初始化列表里面，还是放在函数体里面，都ok，因为编译器不会对一个内置类型初始化作什么动作）。</p>
 <ul>
-<li><p>其中1、2、4，假如初始化列表显示提供了参数，会被传递过去，调用相应构造函数，否则调用默认构造函数。</p>
-</li>
-<li><p><strong>自己定义的所有构造函数，在执行函数体之前，也会被编译器执行1-4的内容, 也就是步骤5才是执行函数体。</strong></p>
-</li>
-<li><p>对于步骤4，内置类型的，比如整型、浮点型、字符型、指针、内置类型数组等都不会被编译器初始化，这些是程序员需要要干的事情。</p>
-</li>
-<li><p>只有在1,2,3,4至少存在一个步骤的时候，编译器才会为你实际合成一个默认构造函数，否则是不会被合成的, 也就是所谓的trivial construction。 </p>
-</li>
-<li><p>假如一个类没有默认构造函数，编译器也不给你合（也就是被定义为删除的），你又默认初始化了一个这个类的对象，那就gg，编译器报错。并且下面这段代码也会报错：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">test</span>(<span class="type">int</span> _a):<span class="built_in">a</span>(_a)&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    test a;</span><br><span class="line">    <span class="type">int</span> b;</span><br><span class="line">    <span class="built_in">test1</span>(<span class="type">int</span> i):<span class="built_in">b</span>(i)&#123;&#125;  <span class="comment">// 因为test1的构造函数test1（int i）体内实际会调用test的默认构造函数（编译器帮你干的），但是test又没有默认构造函数，所以gg</span></span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">test1 <span class="title">ab</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>必须这么做<ul>
+<li>有引用或者const对象，这种必须要初始化的成员的时候</li>
+<li>还有就是你要调用某个成员的非默认构造函数，或者这个成员它没有默认构造函数的时候（如果这样，会报错）</li>
 </ul>
-<h2 id="杂"><a href="#杂" class="headerlink" title="杂"></a>杂</h2><ul>
-<li>内存的global区在程序的一开始会被清0，而local和heap区不会清0，所以这两个区域内存里的值是上一次的遗留物，也就是未知的值。</li>
+</li>
 </ul>
 
       
@@ -840,7 +840,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/22/1-%E5%85%B3%E4%BA%8E%E5%AF%B9%E8%B1%A1/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/23/2-3-2-%E6%8C%89%E5%80%BC%E8%BF%94%E5%9B%9E%E7%9A%84%E5%87%BD%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84-NRV-named-return-value/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -854,7 +854,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/02/22/1-%E5%85%B3%E4%BA%8E%E5%AF%B9%E8%B1%A1/" class="post-title-link" itemprop="url">1 关于对象</a>
+            <a href="/2022/02/23/2-3-2-%E6%8C%89%E5%80%BC%E8%BF%94%E5%9B%9E%E7%9A%84%E5%87%BD%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84-NRV-named-return-value/" class="post-title-link" itemprop="url">2.3.2 按值返回的函数是如何实现的【NRV(named return value)】</a>
         </h2>
 
         <div class="post-meta">
@@ -864,14 +864,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-02-22 20:55:45" itemprop="dateCreated datePublished" datetime="2022-02-22T20:55:45+08:00">2022-02-22</time>
+              <time title="创建时间：2022-02-23 22:55:45" itemprop="dateCreated datePublished" datetime="2022-02-23T22:55:45+08:00">2022-02-23</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-08 22:07:28" itemprop="dateModified" datetime="2022-03-08T22:07:28+08:00">2022-03-08</time>
+                <time title="修改时间：2022-03-10 22:46:00" itemprop="dateModified" datetime="2022-03-10T22:46:00+08:00">2022-03-10</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -894,71 +894,117 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="加入封装后的成本"><a href="#加入封装后的成本" class="headerlink" title="加入封装后的成本"></a>加入封装后的成本</h2><p>在C语言中，“数据”及“处理数据的操作”是分开声明的，这种处理方式被称为procedural（面向过程）。</p>
-<p>而C++中，数据和处理数据的函数是封装在一个类里，这种处理方式被称为面向对象。</p>
-<p>而封装其实并未带来任何成本：</p>
+          <h3 id="按值返回的函数是如何实现的？"><a href="#按值返回的函数是如何实现的？" class="headerlink" title="按值返回的函数是如何实现的？"></a><strong>按值返回的函数是如何实现的</strong>？</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">X <span class="title">bar</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	X xx;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> xx;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译器的经典做法是<strong>在函数参数里面新加一个引用的参数，然后通过拷贝构造函数来把返回值拷贝到这个参数里</strong>。</p>
+<p>也就是一个双阶段转化：</p>
 <ul>
-<li><p>data<br>所有的数据均存储于Object内，就如同struct中的情况一样。</p>
-</li>
-<li><p>member function<br>成员函数虽然包含于class的声明之内，但却不会出现在object中。每一个non-inline成员函数都只会生成一个函数实体。</p>
-</li>
+<li>给该函数添加一个额外参数，类型是返回值类型的一个reference，用来放置被拷贝构造而得的返回值。</li>
+<li>在return指令之前，插入一个拷贝构造函数，将返回值当做这个新增参数的初值。然后函数返回void。</li>
 </ul>
-<p>C++在内存布局以及存储时间上的额外负担主要由virtual引起：</p>
+<p>即 上述bar函数代码转换成：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(X&amp; result)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	X xx;</span><br><span class="line">	<span class="comment">// ... </span></span><br><span class="line">    </span><br><span class="line">    result.X::<span class="built_in">X</span>(xx);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 因此对于每一个bar函数调用操作， 编译器都会进行转换</span></span><br><span class="line">X x1 = <span class="built_in">bar</span>(); </span><br><span class="line"><span class="comment">// 转换成：</span></span><br><span class="line">X x1; <span class="comment">//只分配了内存空间，没有调用默认构造函数</span></span><br><span class="line"><span class="built_in">bar</span>(x1);</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="NRV-（Named-Return-Value）-优化"><a href="#NRV-（Named-Return-Value）-优化" class="headerlink" title="NRV （Named Return Value） 优化"></a>NRV （Named Return Value） 优化</h3><p>上面的优化中，一共构造了两个X对象：x1和xx， 而xx其实只是局部对象，生命周期转瞬即逝。而且对于bar()的调用者来说，根本就没有xx这个对象，调用者想要的只有x1。这样的实现能不能够将其优化变得更快呢？编译器有一种优化方式（NRV优化），直接用x1替代xx。编译器转换后的伪代码如下。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(X&amp; result)</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="comment">// 调用result的默认构造函数  </span></span><br><span class="line">    result.X::<span class="built_in">X</span>();  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">// 处理result  </span></span><br><span class="line">    <span class="keyword">return</span>;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="comment">// 因此对于每一个bar函数调用操作， 编译器都会进行转换</span></span><br><span class="line">X x1 = <span class="built_in">bar</span>(); </span><br><span class="line"><span class="comment">// 转换成：</span></span><br><span class="line">X x1; <span class="comment">// 只分配了内存空间，没有调用默认构造函数</span></span><br><span class="line"><span class="built_in">bar</span>(x1);</span><br></pre></td></tr></table></figure>
+
+<p>NRV优化后的实现，比原来的实现省去了一个X类的临时对象xx的构造和析构操作，还有一个将结果拷贝构造到result的操作，但是多了一个<code>result.X::X();  </code> 的默认构造函数。</p>
 <ul>
-<li>虚函数（virtual function）<br>实现函数执行期绑定。</li>
-<li>虚基类（virtual base class）<br>实现“多次出现在继承体系中的base class在派生类中只存在一个可共享的实体”。</li>
-</ul>
-<p>一般而言，我们没有理由认为C++就一定会比C庞大且迟缓。</p>
-<h2 id="C-对象模型"><a href="#C-对象模型" class="headerlink" title="C++对象模型"></a>C++对象模型</h2><p>在C++对象中，data member分为两种：</p>
-<ol>
-<li>static</li>
-<li>non-static</li>
-</ol>
-<p>function member分为三种：</p>
-<ol>
-<li>static</li>
-<li>non-static</li>
-<li>virtual</li>
-</ol>
+<li><p>可能带来的问题：</p>
 <ul>
-<li>不考虑继承：<ul>
-<li>非静态数据成员被配置于对象内，处于同一个access section的数据，排列顺序与声明顺序一致。（不同access section的数据，排序顺序，标准未定义）</li>
-<li>static数据成员， static 和 非static函数成员被存储于对象之外，一个类只会有一份。</li>
-<li><strong>虚函数则以虚函数表和虚表指针实现。</strong>每一个有虚函数的类，会有一个虚函数表，里面包含了这个类的所有虚函数地址以及这个类的类型信息，而每一个对象内都有一个虚表指针（vptr），指向这个虚函数表，vptr的设定与重置都由构造、析构、拷贝赋值运算符<strong>自动完成， 并且执行时间在自定义代码之前！！</strong></li>
+<li>NRV优化会导致原本预想中的调用拷贝构造函数变成调用默认构造函数，<br>一旦这个时候，拷贝构造函数和默认构造函数提供的功能不同，就可能会出问题。</li>
 </ul>
 </li>
-<li>加入单一继承：<ul>
-<li>会先执行基类的构造函数（此时同样会设置vptr，不过vptr指向的是基类的虚函数表），然后执行子类的构造函数（设置vptr指向子类的虚表）。</li>
-</ul>
-</li>
-<li>加入多重继承：<ul>
-<li>从左到右执行基类的构造函数，然后再执行子类的构造函数，假如有n条继承路线（n个基类），就会有n个vptr，指向n个不同的虚函数表，详见<strong>（TODO！！！）</strong></li>
-</ul>
-</li>
-<li>加入虚继承：<ul>
-<li>有多种实现方法：<ul>
-<li>对象内加入一个指针，指向虚基类对象</li>
-<li>在虚函数表里加一项，维护虚基类对象的位置。</li>
-</ul>
+<li><p>早期C++， NRV优化和拷贝构造函数是有关系的，只有定义了拷贝构造函数才会开启NRV优化，但现代编译器NRV优化的开启一般都与拷贝构造函数没有关系。</p>
 </li>
 </ul>
-</li>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/23/2-3-1-%E4%BC%A0%E5%80%BC%E5%8F%82%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/02/23/2-3-1-%E4%BC%A0%E5%80%BC%E5%8F%82%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84/" class="post-title-link" itemprop="url">2.3.1 传值参数是如何实现的</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-02-23 21:55:45" itemprop="dateCreated datePublished" datetime="2022-02-23T21:55:45+08:00">2022-02-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-10 22:53:33" itemprop="dateModified" datetime="2022-03-10T22:53:33+08:00">2022-03-10</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>考虑如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(X x0)</span></span>;</span><br><span class="line">X xx;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="built_in">foo</span>(xx);</span><br></pre></td></tr></table></figure>
+
+<p>那么传值参数是如何实现的？</p>
+<p>在编译器一种实现步骤如下：</p>
+<ul>
+<li>构建临时对象tmp，并调用copy constructor将它初始化</li>
+<li>将函数参数修改为左值引用类型</li>
+<li>临时对象转交函数</li>
+<li>函数调用结束后，析构该临时对象</li>
 </ul>
-<p>由此可见，一个对象的内存占用由以下三部分组成：</p>
-<ol>
-<li><strong>所有non-static data member所占大小</strong></li>
-<li><strong>为了支持virtual而产生的额外开销（vptr)</strong></li>
-<li><strong>内存对齐所带来的额外占用</strong></li>
-</ol>
-<p>​    </p>
-<h2 id="指针的类型"><a href="#指针的类型" class="headerlink" title="指针的类型"></a>指针的类型</h2><ul>
-<li>指针其实存的就是一个地址，不管啥类型的指针大小都是一样，在32位，指针大小4个字节，64位：8个字节。</li>
-<li>指针的类型只是告诉编译器<strong>如何解释某个特定地址中的内存内容及其大小</strong></li>
-<li>由此引申开来，不能用void * 操作对象（因为不知道指向的地址的内容和大小），针对指针的static_cast，其实是一种编译器指令，并没有改变一个指针的值，只是影响编译器如何去解读地址。</li>
-</ul>
-<h2 id="杂"><a href="#杂" class="headerlink" title="杂"></a>杂</h2><ul>
-<li>多态只存在于public 继承体系，因为一个基类指针不能指向继承方式为protected or private的对象。</li>
-</ul>
+<p>即，如下代码</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X xx;</span><br><span class="line"><span class="function">X <span class="title">tmp</span><span class="params">(xx)</span></span>;</span><br><span class="line"><span class="built_in">foo</span>(tmp);</span><br><span class="line">tmp.~<span class="built_in">X</span>();</span><br></pre></td></tr></table></figure>
+
 
       
     </div>
@@ -977,7 +1023,7 @@
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1043,20 +1089,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
