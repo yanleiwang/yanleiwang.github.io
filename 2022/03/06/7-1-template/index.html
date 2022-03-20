@@ -20,13 +20,15 @@
     var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta property="og:type" content="article">
+  <meta name="description" content="模板的实例化一个模板只有被使用到，才会被实例化，否则不会被实例化。对于一个实例化后的模板来说，未被调用的成员函数将不会被实例化，只有成员函数被使用时，C++标准才要求实例化他们。其原因，有两点：  空间和时间效率的考虑 如果模板类中有100个成员函数，对某个特定类型只有2个函数会被使用，针对另一个特定类型只会使用3个，那么如果将剩余的195个函数实例化将浪费大量的时间和空间。   使模板有最大的适">
+<meta property="og:type" content="article">
 <meta property="og:title" content="7.1 template">
 <meta property="og:url" content="https://yanleiwang.github.io/2022/03/06/7-1-template/index.html">
 <meta property="og:site_name" content="Love WL Forever">
+<meta property="og:description" content="模板的实例化一个模板只有被使用到，才会被实例化，否则不会被实例化。对于一个实例化后的模板来说，未被调用的成员函数将不会被实例化，只有成员函数被使用时，C++标准才要求实例化他们。其原因，有两点：  空间和时间效率的考虑 如果模板类中有100个成员函数，对某个特定类型只有2个函数会被使用，针对另一个特定类型只会使用3个，那么如果将剩余的195个函数实例化将浪费大量的时间和空间。   使模板有最大的适">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-03-06T14:32:42.000Z">
-<meta property="article:modified_time" content="2022-03-06T14:56:41.189Z">
+<meta property="article:modified_time" content="2022-03-16T14:17:51.790Z">
 <meta property="article:author" content="wyl">
 <meta property="article:tag" content="C&#x2F;C++">
 <meta name="twitter:card" content="summary">
@@ -209,10 +211,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-03-06 22:32:42 / 修改时间：22:56:41" itemprop="dateCreated datePublished" datetime="2022-03-06T22:32:42+08:00">2022-03-06</time>
+              <time title="创建时间：2022-03-06 22:32:42" itemprop="dateCreated datePublished" datetime="2022-03-06T22:32:42+08:00">2022-03-06</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-16 22:17:51" itemprop="dateModified" datetime="2022-03-16T22:17:51+08:00">2022-03-16</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -234,7 +242,39 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        
+        <h3 id="模板的实例化"><a href="#模板的实例化" class="headerlink" title="模板的实例化"></a>模板的实例化</h3><p><strong>一个模板只有被使用到，才会被实例化，否则不会被实例化。对于一个实例化后的模板来说，未被调用的成员函数将不会被实例化，只有成员函数被使用时，C++标准才要求实例化他们。</strong>其原因，有两点：</p>
+<ul>
+<li>空间和时间效率的考虑<ul>
+<li>如果模板类中有100个成员函数，对某个特定类型只有2个函数会被使用，针对另一个特定类型只会使用3个，那么如果将剩余的195个函数实例化将浪费大量的时间和空间。</li>
+</ul>
+</li>
+<li>使模板有最大的适用性。<ul>
+<li>并不是实例化出来的每个类型都支持所有模板的全部成员函数所需要的运算符。如果只实例化那些真正被使用的成员函数的话，那么原本在编译期有错误的类型也能够得到支持。</li>
+</ul>
+</li>
+</ul>
+<h3 id="Template的错误报告"><a href="#Template的错误报告" class="headerlink" title="Template的错误报告"></a>Template的错误报告</h3><p>就目前的编译器而言，面对template声明只能执行有限的错误检查。Nonmemember与member template functions在具现行为发生之前一样没有完全的类型检验，这直接导致了一些十分露骨的template错误声明居然能够通过编译，例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> type&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Foo</span>();</span><br><span class="line">    <span class="function">type <span class="title">val</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">val</span><span class="params">(type v)</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    type _val;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//以下内容不会触发报错</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> type&gt;</span><br><span class="line"><span class="type">double</span> Foo&lt;type&gt;::<span class="built_in">bogus_member</span>() &#123;<span class="keyword">return</span> <span class="keyword">this</span>-&gt;dbx;&#125;<span class="comment">//即使Foo并没有member function与data</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Template中的名称决议方式"><a href="#Template中的名称决议方式" class="headerlink" title="Template中的名称决议方式"></a>Template中的名称决议方式</h3><p>我们首先需要明确两种定义：</p>
+<ol>
+<li><p><strong>scope of the template defintion</strong><br>定义出template的程序，有实例如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"> <span class="function"><span class="keyword">extern</span> <span class="type">double</span> <span class="title">foo</span><span class="params">(<span class="type">double</span>)</span></span>;</span><br><span class="line"> <span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">type</span>&gt;</span><br><span class="line"> <span class="keyword">class</span> <span class="title class_">ScopeRules</span>&#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">invariant</span><span class="params">()</span></span>&#123;</span><br><span class="line">        _member = <span class="built_in">foo</span>(_val);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function">type <span class="title">type_dependent</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">foo</span>(_member);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> _val;</span><br><span class="line">    type _member;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>scope of the template instantiation</strong><br>具现出template的程序:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">extern</span> <span class="type">int</span> <span class="title">foo</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">ScopeRule&lt;<span class="type">int</span>&gt; sr0;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>在”scope of template definition”中，只有一个foo()函数声明位于scope内，然而在”scope of template instantiation”中，两个foo()函数声明都位于scope之内，如果我们使用了一个函数调用操作：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sr0.<span class="built_in">invariant</span>();<span class="comment">//调用哪一个foo()?</span></span><br></pre></td></tr></table></figure>
+
+<p>本次调用操作存在两个函数可以调用，分别为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//scope of the template declaration</span></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="type">double</span> <span class="title">foo</span><span class="params">(<span class="type">double</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//scope of the template instantiation</span></span><br><span class="line"><span class="function"><span class="keyword">extern</span> <span class="type">int</span> <span class="title">foo</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>因为_val的类型是int，那么很多人会认为实际调用的是int，毕竟，_val 的类型是 int 类型，它们才完全匹配。而 sr0.type_dependent()中调用的却在我们意料之中，调用的是double。</p>
+<p>原因在于:</p>
+<p>template 之中， 对于一个非成员名字的决议在于它适不适合在当前（模板定义的时候）决议，当它完全与实例化模板的参数的类型无关的时候，就可以在当前决议下来；如果有关的话，则认为不适合在当前决议下来，将被推迟到实例化这个模板实例化的时候来决议。</p>
+<p>在刚才的实例中，foo()与用以具现ScopeRules的参数类型无关，因为_val是一个int，一个类型不会根据不同的具现化而发生改变的数据，因此，member的类型并不会影响哪一个foo()被选中，所以编译器会选择double（在该scope中，只有一个foo()候选者）。</p>
+
     </div>
 
     
@@ -317,6 +357,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E6%9D%BF%E7%9A%84%E5%AE%9E%E4%BE%8B%E5%8C%96"><span class="nav-number">1.</span> <span class="nav-text">模板的实例化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Template%E7%9A%84%E9%94%99%E8%AF%AF%E6%8A%A5%E5%91%8A"><span class="nav-number">2.</span> <span class="nav-text">Template的错误报告</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Template%E4%B8%AD%E7%9A%84%E5%90%8D%E7%A7%B0%E5%86%B3%E8%AE%AE%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">Template中的名称决议方式</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -330,14 +371,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">

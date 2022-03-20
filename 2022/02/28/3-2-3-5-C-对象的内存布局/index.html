@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="对象的内存布局C++类的成员包括：  普通&#x2F;静态数据成员 普通&#x2F;静态函数成员 基类成员 为了实现虚拟化的某些技术（虚函数指针和虚基类指针）  其中静态数据成员，普通&#x2F;静态函数成员是存储在一个类对象的内存空间之外的，所以一个类对象的内存空间里只会有基类成员、普通数据成员和为了实现虚拟化的某些技术。 下面依次讨论以下5种情况下的内存布局：  没有继承，没有虚函数 加入单继">
+<meta property="og:type" content="article">
+<meta property="og:title" content="3.2-3.5 C++对象的内存布局（重要）">
+<meta property="og:url" content="https://yanleiwang.github.io/2022/02/28/3-2-3-5-C-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="Love WL Forever">
+<meta property="og:description" content="对象的内存布局C++类的成员包括：  普通&#x2F;静态数据成员 普通&#x2F;静态函数成员 基类成员 为了实现虚拟化的某些技术（虚函数指针和虚基类指针）  其中静态数据成员，普通&#x2F;静态函数成员是存储在一个类对象的内存空间之外的，所以一个类对象的内存空间里只会有基类成员、普通数据成员和为了实现虚拟化的某些技术。 下面依次讨论以下5种情况下的内存布局：  没有继承，没有虚函数 加入单继">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-02-27T16:18:30.000Z">
+<meta property="article:modified_time" content="2022-03-11T15:12:03.499Z">
+<meta property="article:author" content="wyl">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://yanleiwang.github.io/2022/02/28/3-2-3-5-C-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>3.2-3.5 C++对象的内存布局（重要） | Love WL Forever</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Love WL Forever</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/02/28/3-2-3-5-C-%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          3.2-3.5 C++对象的内存布局（重要）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-02-28 00:18:30" itemprop="dateCreated datePublished" datetime="2022-02-28T00:18:30+08:00">2022-02-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-11 23:12:03" itemprop="dateModified" datetime="2022-03-11T23:12:03+08:00">2022-03-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h2><p>C++类的成员包括：</p>
+<ul>
+<li>普通&#x2F;静态数据成员</li>
+<li>普通&#x2F;静态函数成员</li>
+<li>基类成员</li>
+<li>为了实现虚拟化的某些技术（虚函数指针和虚基类指针）</li>
+</ul>
+<p>其中静态数据成员，普通&#x2F;静态函数成员是存储在一个类对象的内存空间之外的，所以一个类对象的内存空间里只会有基类成员、普通数据成员和为了实现虚拟化的某些技术。</p>
+<p>下面依次讨论以下5种情况下的内存布局：</p>
+<ul>
+<li>没有继承，没有虚函数</li>
+<li>加入单继承</li>
+<li>加入虚函数</li>
+<li>加入多重继承</li>
+<li>加入虚继承</li>
+</ul>
+<p>需要注意，由于内存对齐的要求，不同成员之间其实并不是一定连续排序的，可能会有内存碎片的存在，为了方便，以下情况，都忽略了内存碎片的存在。</p>
+<h3 id="没有继承，没有虚函数"><a href="#没有继承，没有虚函数" class="headerlink" title="没有继承，没有虚函数"></a>没有继承，没有虚函数</h3><p>没有继承，没有虚函数的情况下，对象的内存空间内只有普通数据成员，而C++标准规定，在同一个access section（public、protected、private）内的数据成员按照声明的顺序排列，而不同access section的先后不做要求，但通常实现是按声明的顺序。</p>
+<p><strong>综上所述，数据成员是按照声明的顺序排列</strong></p>
+<h3 id="只有单继承"><a href="#只有单继承" class="headerlink" title="只有单继承"></a>只有单继承</h3><p>C++标准规定，继承不会修改父类子对象的内存布局， 例如父类由于内存对齐产生的额外空间在子类中不会被消除, 而是保持原样. 所以下面的代码中, 子类大小是24 bytes, 而不是16 bytes.  </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Base</span> <span class="comment">// 16 bytes</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int64_t</span> i1;</span><br><span class="line">    <span class="type">char</span> c1;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Derived</span> : Base <span class="comment">// 24 bytes</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> c2;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其原因是如果消除了这些额外空间, 将子类对象赋值给父类对象时就可能会在父类对象的额外空间位置赋值, 这改变了程序的语义, 显然是不合适的.</p>
+<p>由于一个构造函数总是先执行父类的构造函数，然后执行子类的构造函数（析构函数按相反的方向，先子类析构，再父类析构），所以在只有单继承的情况，一个子类对象的内存布局是：<strong>先父类子对象，然后是子类的数据成员</strong>。</p>
+<h3 id="加入虚函数"><a href="#加入虚函数" class="headerlink" title="加入虚函数"></a>加入虚函数</h3><p>虚函数带来的开销是：</p>
+<ul>
+<li><p>虚函数表</p>
+<ul>
+<li>构建一个虚函数表，存放着所有该类相关的虚函数地址和类的类型信息（用于支持RTTI）</li>
+</ul>
+</li>
+<li><p>虚表指针（vptr）</p>
+<ul>
+<li>类的对象内存空间内加入一个虚表指针，指向该类的虚函数表（一个类只有一个虚函数表，所有对象共享这个虚函数表）</li>
+<li>一个单继承的类，只有一个虚表指针</li>
+</ul>
+</li>
+<li><p>加强构造函数</p>
+<ul>
+<li>编译器自动在构造函数中插入代码，设定虚表指针的值。</li>
+<li>设定时机在基类的构造函数之后，初始化子类数据成员之前。</li>
+<li>考虑一个单继承的子类。构造子类对象时会先执行父类的构造函数，在父类的构造函数中，虚表指针的值会被先设定为指向父类的虚函数表，然后在子类的构造函数中，虚表指针再被设定为指向子类的虚函数表，<strong>其目的是为了假如父类的构造函数中，调用了一个虚函数，能够正确的执行父类实现的虚函数，而不是子类实现的虚函数。</strong></li>
+</ul>
+</li>
+<li><p>加强析构函数</p>
+<ul>
+<li>编译器自动在析构函数中插入代码， 析构函数需要能够重设虚表指针的值，在调用父类的析构函数之前，使其指向父类的虚函数表（析构，先析构子类，再析构父类，与构造函数相反）。</li>
+</ul>
+</li>
+<li><p>通过指针或者引用调用虚函数的时候</p>
+<ul>
+<li><code>a-&gt;func();</code>  会被编译器转化为 <code>(*a-&gt;vptr[0])();</code>, 即发生动态绑定，实际调用的函数需要等到执行期才能确定。</li>
+</ul>
+</li>
+</ul>
+<p>虚表指针存放的地址：</p>
+<ul>
+<li>可以放在对象内存空间的最后<ul>
+<li>好处：对象的内存空间可以跟C兼容,可以将 C++对象直接传递给 c 函数进行处理。</li>
+</ul>
+</li>
+<li>可以放在对象内存空间的开始<ul>
+<li>好处：在多重继承中, 通过类成员指针访问虚函数会更容易实现, (其实就是不需要再调整this，加上vptr的偏移了)</li>
+</ul>
+</li>
+</ul>
+<h3 id="加入多重继承"><a href="#加入多重继承" class="headerlink" title="加入多重继承"></a>加入多重继承</h3><p>同样会先构造基类，然后再构造子类，虽然标准并没有规定不同基类在布局中的顺序, 但是大多数实现按照继承声明顺序安排. 假设多重继承有n条继承路线，那么子类就会有n个虚表指针（次要实例都有虚函数的前提下）。</p>
+<p>多重继承给程序带来了这些负担:</p>
+<ul>
+<li><p>将子类地址赋值给基类指针变量时, 如果是声明中的第一个基类, 二者地址相等, 可以直接赋值. 否则, 需要加上一个偏移量, 已获得对应对象的地址.</p>
+</li>
+<li><p>上面的直接加偏移并不能保证正确性, 设想子类指针值为0, 直接加上偏移后指向的是一个内容未知的地址. 正确做法应该是将0值赋给基类指针变量. 因此, 需要先判断基类指针是否为0, 再做处理. 即</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base1</span>;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Base2</span>;</span><br><span class="line">Class A: <span class="keyword">public</span> Base1, <span class="keyword">public</span> Base2 &#123;</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">A a;</span><br><span class="line">A *ptr_a = &amp;a;</span><br><span class="line">Base2 *ptr_b = &amp;ptr_a;</span><br><span class="line"><span class="comment">// 会被转换为</span></span><br><span class="line">Base2 *ptr_b = ptr_a ? (Base2 *)((<span class="type">char</span>*)(ptr_a) + <span class="built_in">sizeof</span>(Base1)):<span class="number">0</span>;</span><br><span class="line"><span class="comment">//(char*)(ptr_a)的原因是指针的加1，减1并不是加减1个字节，而是加减1个该指针指向的类型的大小</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>而对于引用, 虽然其底层是指针, 但是不需要检查是否为0, 因为引用必须要绑定到一个有效地址, 不可能为0.</p>
+</li>
+<li><p>对于第二或后继基类中的数据成员的存储是不需要付出额外成本的，因为成员的位置在编译时就固定下了，因此存取成员只是一个简单的 offset 运算。</p>
+</li>
+</ul>
+<h3 id="加入虚拟继承"><a href="#加入虚拟继承" class="headerlink" title="加入虚拟继承"></a>加入虚拟继承</h3><p>多重继承的一大副作用在于，它必须解决菱形继承问题。比如如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ios</span> &#123;..&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">istream</span>:<span class="keyword">public</span> ios &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ostream</span>:<span class="keyword">public</span> ios &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">iostream</span>:<span class="keyword">public</span> istream,<span class="keyword">public</span> ostream &#123;...&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>显然，无论是istream还是ostream内部都含有一个ios subobject。我们希望避免在iostream中出现两个2个ios subobject，因此可以引入虚继承：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">ios</span> &#123;..&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">istream</span>:<span class="keyword">public</span> <span class="keyword">virtual</span> ios &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">ostream</span>:<span class="keyword">public</span> <span class="keyword">virtual</span> ios &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">iostream</span>:<span class="keyword">public</span> istream,<span class="keyword">public</span> ostream &#123;...&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>实现虚继承的一大难点在于需要找到一个足够有效的方法，如何实现只有一个虚拟基类？</p>
+<p>主流方案是分成两个部分，一个不变区域，一个共享区域，不变区域放的是非虚基类部分，而把虚基类作为共享部分。而虚基类的直接派生类如何存取虚基类，有两种方法：</p>
+<ul>
+<li>在每个直接派生类里面放一个指针指向这个虚拟基类</li>
+<li>在虚表中添加一项, 记录基类对象在对象中的偏移, 从而获得其地址.</li>
+</ul>
+<p>第一种实现模型主要有两个缺点：</p>
+<ol>
+<li>每一个virtual base class都存在一个与之对应的指针，但我们希望空间开销固定，不能因为virtual base class数目的增长而增长。</li>
+<li>继承体系发生纵向增长后，间接存取的层次也将提高，我们希望时间开销固定，不随着继承体系扩张而增长。</li>
+</ol>
+<p>而第二种就不会，增加虚基类，就增加虚表的表项，gcc的做法是将虚基类放在对象末尾,采用第二种方法。 </p>
+<h2 id="数据成员的存取"><a href="#数据成员的存取" class="headerlink" title="数据成员的存取"></a>数据成员的存取</h2><ul>
+<li><p>静态数据成员<br>对静态成员, 通过对象或对象指针访问和通过类名访问没有区别, 编译器一般会将二者统一为相同形式. </p>
+<p>类成员指针不能指向静态成员, 因为对静态成员取地址得到的是一个该成员的指针. 如:</p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">static</span> <span class="type">int</span> x;</span><br><span class="line">&#125;;</span><br><span class="line">&amp;A::x; <span class="comment">// 其类型是 int*</span></span><br></pre></td></tr></table></figure>
+
+
+<p>因为类静态成员都是保存在全局数据段中, 如果不同类具有相同名字的静态成员, 就需要保证不会发生名称冲突. 编译器的解决方法是对每个静态数据成员编码(这种操作称为name-mangling), 以得到一个独一无二的名称.</p>
+<ul>
+<li><p>非静态数据成员</p>
+<ul>
+<li><p>通过对象名（非引用、非指针类型）访问非静态数据成员时（包括虚基类的数据成员），与访问静态数据成员也没有区别，因为存取的做法是对象的起始位置+一个偏移量，偏移量固定好了，在编译的时期就已经知道了，所以这个操作是在编译期做的。</p>
+</li>
+<li><p>而假如是通过对象指针或者引用访问数据成员时</p>
+<ul>
+<li>访问非虚基类的数据成员时，存取的做法也是对象的起始位置+一个偏移量，而偏移量也是固定好的，所以成本与访问静态数据成员的成本是一样的</li>
+<li>访问虚基类数据成员时，需要在运行时才能确定, 因为无法确定指针所指对象的实际类型, 也就不能判断对象的内存布局, 也就不知道对象中该数据成员的偏移</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>一般而言，virtual base class最有效的一种运用方式是：一个抽象的virtual base class，没有任何data members（类似于Java的Interface）。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C-C/" rel="tag"># C/C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/02/28/3-1-%E7%B1%BB%E9%87%8C%E9%9D%A2%E7%9A%84%E5%90%8D%E5%AD%97%E6%9F%A5%E6%89%BE%E8%A7%84%E5%88%99/" rel="prev" title="3.1 类里面的名字查找规则">
+      <i class="fa fa-chevron-left"></i> 3.1 类里面的名字查找规则
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/02/28/3-6-%E6%8C%87%E5%90%91%E6%95%B0%E6%8D%AE%E6%88%90%E5%91%98%E7%9A%84%E6%8C%87%E9%92%88/" rel="next" title="3.6 指向数据成员的指针">
+      3.6 指向数据成员的指针 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="nav-number">1.</span> <span class="nav-text">对象的内存布局</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B2%A1%E6%9C%89%E7%BB%A7%E6%89%BF%EF%BC%8C%E6%B2%A1%E6%9C%89%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-number">1.1.</span> <span class="nav-text">没有继承，没有虚函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AA%E6%9C%89%E5%8D%95%E7%BB%A7%E6%89%BF"><span class="nav-number">1.2.</span> <span class="nav-text">只有单继承</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E8%99%9A%E5%87%BD%E6%95%B0"><span class="nav-number">1.3.</span> <span class="nav-text">加入虚函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF"><span class="nav-number">1.4.</span> <span class="nav-text">加入多重继承</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A0%E5%85%A5%E8%99%9A%E6%8B%9F%E7%BB%A7%E6%89%BF"><span class="nav-number">1.5.</span> <span class="nav-text">加入虚拟继承</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E6%88%90%E5%91%98%E7%9A%84%E5%AD%98%E5%8F%96"><span class="nav-number">2.</span> <span class="nav-text">数据成员的存取</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wyl</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">35</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wyl</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

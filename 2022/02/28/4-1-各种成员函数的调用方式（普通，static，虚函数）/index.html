@@ -20,15 +20,15 @@
     var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="c++支持三种类型的成员函数，分别为static,nostatic,virtual。每一种调用方式都不尽相同。  非静态成员函数 （Nonstatic Member Functions） 保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。  事实上在c++中非静态成员函数（nostatic member f">
+  <meta name="description" content="c++支持三种类型的成员函数，分别为  static nostatic virtual。  每一种调用方式都不尽相同。  非静态成员函数 （Nonstatic Member Functions） 保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。  事实上在c++中非静态成员函数（nostatic memb">
 <meta property="og:type" content="article">
 <meta property="og:title" content="4.1 各种成员函数的调用方式（普通，static，虚函数）">
 <meta property="og:url" content="https://yanleiwang.github.io/2022/02/28/4-1-%E5%90%84%E7%A7%8D%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%88%E6%99%AE%E9%80%9A%EF%BC%8Cstatic%EF%BC%8C%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%89/index.html">
 <meta property="og:site_name" content="Love WL Forever">
-<meta property="og:description" content="c++支持三种类型的成员函数，分别为static,nostatic,virtual。每一种调用方式都不尽相同。  非静态成员函数 （Nonstatic Member Functions） 保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。  事实上在c++中非静态成员函数（nostatic member f">
+<meta property="og:description" content="c++支持三种类型的成员函数，分别为  static nostatic virtual。  每一种调用方式都不尽相同。  非静态成员函数 （Nonstatic Member Functions） 保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。  事实上在c++中非静态成员函数（nostatic memb">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-02-28T15:11:44.000Z">
-<meta property="article:modified_time" content="2022-03-05T14:29:07.656Z">
+<meta property="article:modified_time" content="2022-03-12T07:33:42.455Z">
 <meta property="article:author" content="wyl">
 <meta property="article:tag" content="C&#x2F;C++">
 <meta name="twitter:card" content="summary">
@@ -219,7 +219,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-05 22:29:07" itemprop="dateModified" datetime="2022-03-05T22:29:07+08:00">2022-03-05</time>
+                <time title="修改时间：2022-03-12 15:33:42" itemprop="dateModified" datetime="2022-03-12T15:33:42+08:00">2022-03-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -243,35 +243,39 @@
 
       
         <blockquote>
-<p>c++支持三种类型的成员函数，分别为static,nostatic,virtual。每一种调用方式都不尽相同。</p>
+<p>c++支持三种类型的成员函数，分别为</p>
+<ul>
+<li>static</li>
+<li>nostatic</li>
+<li>virtual。</li>
+</ul>
+<p>每一种调用方式都不尽相同。</p>
 </blockquote>
 <h3 id="非静态成员函数-（Nonstatic-Member-Functions）"><a href="#非静态成员函数-（Nonstatic-Member-Functions）" class="headerlink" title="非静态成员函数 （Nonstatic Member Functions）"></a>非静态成员函数 （Nonstatic Member Functions）</h3><ul>
 <li><p>保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。</p>
 </li>
 <li><p>事实上在c++中非静态成员函数（nostatic member function）与普通函数的调用也确实具有相同的效率。因为编译器内部会将成员函数等价转换为非成员函数，所以本质上非静态成员函数就如同一个普通函数, 如一个非静态成员函数：</p>
-<p><code>X float Point::X()</code>  就相当于一个普通函数</p>
+<p><code>X float Point::X()</code>  </p>
+<p>就相当于一个普通函数：</p>
 <p><code>float X(Point * const this)</code></p>
 <p>编译器具体是这样做的:</p>
 <ul>
 <li><p>改写成员函数的签名，使得其可以接受一个额外参数，这个额外参数即是this指针：</p>
 </li>
 <li><p>&#96;&#96;&#96;c++<br>float Point::X();<br>&#x2F;&#x2F;成员函数X被插入额外参数this<br>float Point:: X(Point* const this );<br>&#x2F;&#x2F; 当然如果成员函数是const的，插入的参数类型将为 const Point * const 类型。（指向常量的常量指针）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  + 将每一个对非静态数据成员的操作都改写为经过this操作。</span><br><span class="line"></span><br><span class="line">  + 将成员函数写成一个外部函数，对函数名进行名字修饰，使之成为独一无二的名称。</span><br><span class="line"></span><br><span class="line">+ 可以看出，将一个成员函数改写成一个外部函数的关键在于两点：</span><br><span class="line"></span><br><span class="line">  + 一是给函数提供一个可以直接读写成员数据的通道；</span><br><span class="line">  + 二是解决好有可能带来的名字冲突。</span><br><span class="line"></span><br><span class="line">  第一点通过给函数提供一个额外的指针参数来解决</span><br><span class="line"></span><br><span class="line">  第二点则是通过一定的规则将名字转换，使之独一无二。</span><br><span class="line"></span><br><span class="line">  由此可以做出一点总结：**一个成员函数实际上就是一个被插入了一个接受其类的常量指针类型的额外参数的非成员函数。**</span><br><span class="line"></span><br><span class="line">  当然还要额外对函数的名称进行处理。额外插入的参数用来访问数据成员，而名称的特殊处理用来避免名字冲突。</span><br><span class="line"></span><br><span class="line">### 静态成员函数(Static Member Functions)</span><br><span class="line"></span><br><span class="line">静态成员函数的主要特性：没有this指针，其他一些次要特性：</span><br><span class="line"></span><br><span class="line">+ 不能够直接存取其类中的非静态成员（nostatic members），包括不能调用非静态成员函数(Nonstatic Member Functions)。</span><br><span class="line">+ 不能够声明为 const、voliatile或virtual。</span><br><span class="line">+ 它不需经由对象调用，当然，通过对象调用也被允许。</span><br><span class="line"></span><br><span class="line">​	除了缺乏一个this指针他与非静态成员函数没有太大的差别。在这里通过对象调用和通过指针或引用调用，将被转化为同样的调用代码。</span><br><span class="line"></span><br><span class="line">### 虚函数</span><br><span class="line"></span><br><span class="line">如果一个函数是虚函数，那么当用指针或引用进行调用时，会被编译器重写，比如：</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line">// p-&gt;function()</span><br><span class="line">//将转化为</span><br><span class="line">(*p-&gt;vptr[1])(p);</span><br></pre></td></tr></table></figure></li>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  + 将每一个对非静态数据成员的操作都改写为经过this操作。</span><br><span class="line"></span><br><span class="line">  + 将成员函数写成一个外部函数，对函数名进行名字修饰，使之成为独一无二的名称。</span><br><span class="line"></span><br><span class="line">+ 可以看出，将一个成员函数改写成一个外部函数的关键在于两点：</span><br><span class="line"></span><br><span class="line">  + 给函数提供一个可以直接读写成员数据的通道；</span><br><span class="line">  + 解决好有可能带来的名字冲突。</span><br><span class="line"></span><br><span class="line">  第一点通过给函数提供一个额外的指针参数来解决</span><br><span class="line"></span><br><span class="line">  第二点则是通过一定的规则将名字转换，使之独一无二。</span><br><span class="line"></span><br><span class="line">  由此可以做出一点总结：**一个成员函数实际上就是一个被插入了一个接受其类的常量指针类型的额外参数的非成员函数。**当然还要额外对函数的名称进行处理。额外插入的参数用来访问数据成员，而名称的特殊处理用来避免名字冲突。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 静态成员函数(Static Member Functions)</span><br><span class="line"></span><br><span class="line">静态成员函数的主要特性：没有this指针，由此带来的结果是: </span><br><span class="line"></span><br><span class="line">+ 不能够直接存取其类中的非静态成员（nostatic members），包括不能调用非静态成员函数(Nonstatic Member Functions)。</span><br><span class="line">+ 不能够声明为 const、voliatile、virtual。</span><br><span class="line">+ 它不需经由对象调用，当然，通过对象调用也被允许。</span><br><span class="line"></span><br><span class="line">​	除了缺乏一个this指针他与非静态成员函数没有太大的差别。通过对象调用和通过指针或引用调用静态成员函数，将被转化为同样的调用代码。</span><br><span class="line"></span><br><span class="line">### 虚函数</span><br><span class="line"></span><br><span class="line">如果一个函数是虚函数，那么当用指针或引用进行调用时，会被编译器重写，比如：</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line">// p-&gt;function()</span><br><span class="line">//将转化为</span><br><span class="line">(*p-&gt;vptr[1])(p);</span><br></pre></td></tr></table></figure></li>
 </ul>
 </li>
 </ul>
 <p>也就是通过虚函数指针找到虚函数表，然后根据固定的表项找到实际要执行的虚函数。</p>
 <ul>
-<li><p>其中vptr为指向虚函数表的指针，它由编译器产生。<strong>vptr也要进行名字修饰，因为一个继承体系可能有多个vptr。</strong></p>
-</li>
-<li><p>1是虚函数在虚函数表中的索引，通过它关联到虚函数function().</p>
-</li>
-<li><p>何时发生这种转换？</p>
+<li>其中vptr为指向虚函数表的指针，它由编译器产生。<strong>vptr也要进行名字修饰，因为一个继承体系可能有多个vptr。</strong></li>
+<li>1是虚函数在虚函数表中的索引，通过它关联到虚函数function().</li>
+</ul>
+<p>何时发生这种转换？</p>
 <ul>
 <li>当通过指针或者引用调用的时候，因为要调用的函数实体无法在编译期决定，必需待到执行期才能获得，</li>
-<li>但是当我们通过对象（不是引用，也不是指针）来调用的时候，<br>就不会发生，因为在编译器要调用的函数实体已经被决定。此时调用的就是根据指针的静态类型决定的函数。</li>
-</ul>
-</li>
+<li>但是当我们通过对象（不是引用，也不是指针）来调用的时候，就不会发生，因为在编译器要调用的函数实体已经被决定。此时调用的就是根据指针的静态类型决定的函数。</li>
 </ul>
 
     </div>
@@ -291,12 +295,12 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2022/02/28/4-0-%E5%90%8D%E5%AD%97%E4%BF%AE%E9%A5%B0/" rel="prev" title="4.0 名字修饰">
-      <i class="fa fa-chevron-left"></i> 4.0 名字修饰
+    <a href="/2022/02/28/3-6-%E6%8C%87%E5%90%91%E6%95%B0%E6%8D%AE%E6%88%90%E5%91%98%E7%9A%84%E6%8C%87%E9%92%88/" rel="prev" title="3.6 指向数据成员的指针">
+      <i class="fa fa-chevron-left"></i> 3.6 指向数据成员的指针
     </a></div>
       <div class="post-nav-item">
-    <a href="/2022/03/01/4-3-%E6%8C%87%E5%90%91%E7%B1%BB%E6%88%90%E5%91%98%E7%9A%84%E6%8C%87%E9%92%88%EF%BC%88%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%92%8C%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%EF%BC%89/" rel="next" title="4.3 指向类成员的指针（数据成员和函数成员）">
-      4.3 指向类成员的指针（数据成员和函数成员） <i class="fa fa-chevron-right"></i>
+    <a href="/2022/03/01/4-0-%E5%90%8D%E5%AD%97%E4%BF%AE%E9%A5%B0/" rel="next" title="4.0 名字修饰">
+      4.0 名字修饰 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -370,14 +374,14 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">

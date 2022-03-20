@@ -183,7 +183,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/10/C-%E5%AD%98%E5%82%A8%E8%AF%B4%E6%98%8E%E7%AC%A6%E5%92%8Ccv-%E9%99%90%E5%AE%9A%E7%AC%A6/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/17/%E7%B1%BB%E7%9A%84%E8%AE%BF%E9%97%AE%E6%9D%83%E9%99%90-public%EF%BC%8Cprotected%EF%BC%8Cprivate/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -197,260 +197,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/03/10/C-%E5%AD%98%E5%82%A8%E8%AF%B4%E6%98%8E%E7%AC%A6%E5%92%8Ccv-%E9%99%90%E5%AE%9A%E7%AC%A6/" class="post-title-link" itemprop="url">C++存储说明符和CV限定符（static，extern，thread_local，mutable，const，volatile）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-03-10 15:54:24 / 修改时间：19:42:59" itemprop="dateCreated datePublished" datetime="2022-03-10T15:54:24+08:00">2022-03-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C-C-%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">C/C++基础</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="存储持续性"><a href="#存储持续性" class="headerlink" title="存储持续性"></a>存储持续性</h2><p>C++使用四种不同的方案来存储数据，这些方案的区别在于数据的存储持续性和存储位置。</p>
-<ul>
-<li>自动存储持续性。局部变量的存储持续性为自动，存储在函数栈中，在程序执行所属函数时被创建，执行完时所用内存被释放。</li>
-<li>静态存储性。全局变量和使用static定义的变量的存储持续性都为静态，存储区域为全局数据区（细分为静态存储区、data区和bss区），在程序整个运行过程中都存在。</li>
-<li>线程存储持续性。使用关键字thread_local声明的变量，其生命周期与所属的线程一样长。</li>
-<li>动态存储持续性。存储在堆中的内存，除非显式释放（delete），否则在程序整个运行过程中都存在。</li>
-</ul>
-<h2 id="链接性"><a href="#链接性" class="headerlink" title="链接性"></a>链接性</h2><p><strong>链接性</strong>描述了名称（变量和函数）如何在不同的编译单元（源文件）间共享，C++一共有三种链接性：</p>
-<ul>
-<li>内部链接性，具有该链接性的名称只能在定义它的编译单元内可见</li>
-<li>外部链接性，具有该链接性的名称可以在所有文件间共享。</li>
-<li>无链接性，只能在当前函数或代码块中访问。（其实也就是局部变量具有该链接性）</li>
-</ul>
-<h2 id="普通变量和函数的存储持续性和链接性"><a href="#普通变量和函数的存储持续性和链接性" class="headerlink" title="普通变量和函数的存储持续性和链接性"></a>普通变量和函数的存储持续性和链接性</h2><ul>
-<li>一个普通的全局变量，生命周期是全局的，整个程序的运行过程中都存在，存储区域为全局数据区，具有外部链接性。由于全局数据区的内存，在程序启动的时候，会被全部初始为0，假如变量没有显示初始化，如果是类类型，则会执行默认构造函数；如果是内置类型，其值为0.</li>
-<li>一个普通的全局函数，生命周期是全局的，具有外部链接性</li>
-<li>一个普通的局部变量，存储在函数栈中，在程序执行所属函数时被创建，执行完时所用内存被释放，无链接性。</li>
-</ul>
-<p>变量和函数可以加存储说明符和CV限定符改变其存储持续性和链接性。</p>
-<h2 id="存储说明符"><a href="#存储说明符" class="headerlink" title="存储说明符"></a>存储说明符</h2><p>C++一共有五种存储说明符可以改变存储持续性和链接性（在同一个声明中不能使用多个说明符，thread_local除外，它可与static或extern结合使用）：</p>
-<ul>
-<li>register</li>
-<li>static</li>
-<li>extern</li>
-<li>thread_local</li>
-<li>mutable</li>
-</ul>
-<h3 id="register"><a href="#register" class="headerlink" title="register"></a>register</h3><ul>
-<li><p>只有局部变量才能用register修饰。</p>
-</li>
-<li><p>在C和C++11之前，该关键字的作用是建议编译器使用CPU寄存器来存储该局部变量。而C++11中，该作用已经失去了，只是显式地指出该变量是局部变量，然而也只有局部变量才能用register关键字修饰，所以其实就是<strong>没用</strong>，之所以还保留，是为了避免使用了该关键字的现有代码非法。</p>
-</li>
-</ul>
-<h3 id="static"><a href="#static" class="headerlink" title="static"></a>static</h3><p>static关键字可以修饰一个函数，一个变量，也可以修饰一个类成员</p>
-<ul>
-<li>当修饰一个全局变量或者一个全局函数的时候，修改的是这些符号的链接，从外部链接性变为内部链接性，这些符号只能在定义它的源文件中被使用，其他的源文件不能被使用，而存储位置和生命周期都不变。<ul>
-<li>所以我们可以在两个源文件里定义两个同名的static全局变量&#x2F;函数，而不会产生重定义的编译错误，这两个static变量的内存地址是不同的。</li>
-<li><strong>static全局变量&#x2F;函数应该定义在源文件中。</strong></li>
-</ul>
-</li>
-<li>当修饰一个局部变量的时候，改变了变量的存储位置和生命周期，普通的局部变量存储位置是在栈中的，并且在函数调用完之后被自动释放，而static局部变量的存储位置是在静态存储区，假如未经初始化会被自动初始化为0。static局部变量在函数的第一次执行的时候被创建，程序结束的时候被销毁。它的作用域不变。</li>
-<li>假如修饰的是一个类成员，表示的是这个数据成员或者成员函数是属于类的，而不是某个对象的，所有对象共享一个静态成员，并且静态成员函数，由于没有this指针，所以不能访问类的非static成员。</li>
-</ul>
-<h3 id="extern"><a href="#extern" class="headerlink" title="extern"></a>extern</h3><p>extern一共有以下两种作用。</p>
-<h4 id="extern-变量"><a href="#extern-变量" class="headerlink" title="extern 变量"></a>extern 变量</h4><p> 此时extern的作用是声明。<code>extern int a</code>告诉编译器，有一个int类型的变量a定义在其他地方，如果有调用请去其他文件中查找定义。</p>
-<p>由于一个全局变量只能被定义一次，否则会出现重定义链接错误。假如我们想在多个源文件中使用这个全局变量，就需要在使用该变量的其他所有文件中，使用extern声明它。具体的用法如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A.h</span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">int</span> a;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//main.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	cout &lt;&lt; a &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>其实就是在一个头文件A.h中声明它，在对应的源文件A.cpp中定义它，而在其他使用该变量的文件中include A.h这个头文件。</p>
-<ul>
-<li><code>extern int a = 1;</code> 是错误的，不应该在声明的时候进行初始化，否则声明为定义，跟<code>int a = 1</code>的效果是一致的</li>
-</ul>
-<h4 id="extern-“C”"><a href="#extern-“C”" class="headerlink" title="extern “C”"></a>extern “C”</h4><ul>
-<li>被 extern 限定的函数或变量是 extern 类型的</li>
-<li>被 <code>extern &quot;C&quot;</code> 修饰的变量和函数是按照 C 语言方式编译和链接的</li>
-</ul>
-<p><code>extern &quot;C&quot;</code> 的作用是让 C++ 编译器将 <code>extern &quot;C&quot;</code> 声明的代码当作 C 语言代码处理，可以避免 C++ 因符号修饰导致代码不能和C语言库中的符号进行链接的问题。</p>
-<p>extern “C” 使用</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> *<span class="title">memset</span><span class="params">(<span class="type">void</span> *, <span class="type">int</span>, <span class="type">size_t</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
-
-<h3 id="thread-local"><a href="#thread-local" class="headerlink" title="thread_local"></a>thread_local</h3><p>thread_local修饰的变量表示该变量的持续性与所属线程的持续性相同。</p>
-<p><strong>TODO 待补充</strong></p>
-<h3 id="mutable"><a href="#mutable" class="headerlink" title="mutable"></a>mutable</h3><p>可以用它来指出，即使类的对象为const，其某个成员也可以被修改。比如</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">A</span>():<span class="built_in">val</span>(<span class="number">0</span>)&#123;&#125;</span><br><span class="line">	<span class="keyword">mutable</span> <span class="type">int</span> val;</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">()</span> <span class="type">const</span> </span>&#123; val++;&#125;; <span class="comment">// 1)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">const</span> A tmp;</span><br><span class="line">tmp.val = <span class="number">2</span>; <span class="comment">// 2)</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>因为val被mutable关键字修饰，所以1）和2）操作都是允许的。</p>
-<h2 id="CV限定符"><a href="#CV限定符" class="headerlink" title="CV限定符"></a>CV限定符</h2><p>C++ CV限定符：</p>
-<ul>
-<li>const</li>
-<li>volatile</li>
-</ul>
-<h3 id="const"><a href="#const" class="headerlink" title="const"></a>const</h3><ul>
-<li><p>可以修饰变量，说明该变量不可以被改变</p>
-<ul>
-<li><p>当修饰一个全局变量的时候，会改变其链接性。一个普通的全局变量具有外部链接性，而const全局变量的链接性为内部的，也就是说const全局变量只能在定义它的源文件中被使用，其他的源文件不能被使用。</p>
-<p>如果希望每个文件都有自己的一组常量，而不是所有文件共享一组常量，那么可以将常量全局变量定义放在头文件中。</p>
-<p>如果希望常量的链接性为外部的，也就是多个文件共享一个常量，可以加上extern关键词，具体的就是：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A.h</span></span><br><span class="line"><span class="keyword">extern</span> <span class="type">const</span> <span class="type">int</span> a;</span><br><span class="line"></span><br><span class="line"><span class="comment">// A.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//main.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;A.h&quot;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	cout &lt;&lt; a &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>修饰指针，分为指向常量的指针（<code>const int* a</code>）和自身是常量的指针（常量指针，<code>int * const a</code>）；</p>
-</li>
-<li><p>修饰引用，指向常量的引用（<code>const int&amp; a</code>），经常用于函数的形参类型，即避免了拷贝，又避免了函数对值的修改</p>
-</li>
-<li><p>修饰成员函数，说明该成员函数内不能修改成员变量。其实质是改变了成员函数的隐藏参数this，从<code>类名 * const</code> 变为 <code>const 类名 * const</code></p>
-</li>
-</ul>
-<h3 id="volatile"><a href="#volatile" class="headerlink" title="volatile"></a>volatile</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">volatile</span> <span class="type">int</span> i = <span class="number">10</span>; </span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>volatile 关键字是一种类型修饰符，用它声明的类型变量表示即使程序代码没有对内存单元进行修改，其值也可能发生变化（被硬件、其它线程等）可以被某些编译器未知的因素（操作系统、硬件、其它线程等）更改。所以使用 volatile 告诉编译器不应对这样的对象进行优化。</li>
-<li>使用 volatile 告诉编译器不应对这样的对象的值缓存到寄存器中，每次访问时都必须从内存中取出值。</li>
-<li>const 可以是 volatile （如只读的状态寄存器）</li>
-<li>指针可以是 volatile</li>
-</ul>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li>C++ primer plus 9.1~9.2.7</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/10/c-%E5%90%8D%E5%AD%97%E6%9F%A5%E6%89%BE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/10/c-%E5%90%8D%E5%AD%97%E6%9F%A5%E6%89%BE/" class="post-title-link" itemprop="url">c++ 名字查找</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-03-10 10:09:40 / 修改时间：12:58:40" itemprop="dateCreated datePublished" datetime="2022-03-10T10:09:40+08:00">2022-03-10</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="普通的变量和函数"><a href="#普通的变量和函数" class="headerlink" title="普通的变量和函数"></a>普通的变量和函数</h2><p>对于普通的变量和函数，名字查找（寻找与所用名字最匹配的声明的过程）的规则是：</p>
-<ul>
-<li>首先，在名字所在的作用域内查找声明语句，<strong>只考虑在名字的使用之前出现的声明。</strong></li>
-<li>如果没找到，继续查找外层作用域。</li>
-<li>否则，最终没找到，报错。</li>
-</ul>
-<p>比如, 下面这段代码会报错</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="built_in">func</span>(<span class="number">1</span>);	</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span> val)</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; val &lt;&lt;endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>而这段不会：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	<span class="built_in">func</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span> val)</span></span>&#123;</span><br><span class="line">	cout &lt;&lt; val &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="类"><a href="#类" class="headerlink" title="类"></a>类</h2><ul>
-<li><p><strong>类成员变量的声明，成员函数的声明（返回类型+形参类型）</strong>与普通的变量和函数的名字查找规则一样，<strong>都必须在使用前确保可见</strong>，这也是为什么类里面的typedef通常被写在最前面。</p>
-</li>
-<li><p><strong>而成员函数的函数体的编译解析，是会等到编译器处理完类中的全部声明后才会处理</strong>，所以以下代码是没有问题的</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func1</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="built_in">func2</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func2</span><span class="params">()</span></span>&#123;</span><br><span class="line">		cout &lt;&lt; <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>C++ primer 7.4节</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/09/%E6%A8%A1%E6%9D%BF%E5%AE%9E%E5%8F%82%E6%8E%A8%E6%96%AD-%E5%BC%95%E7%94%A8%E6%8A%98%E5%8F%A0-move-%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/09/%E6%A8%A1%E6%9D%BF%E5%AE%9E%E5%8F%82%E6%8E%A8%E6%96%AD-%E5%BC%95%E7%94%A8%E6%8A%98%E5%8F%A0-move-%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91/" class="post-title-link" itemprop="url">模板实参推，引用折叠，move，完美转发</a>
+            <a href="/2022/03/17/%E7%B1%BB%E7%9A%84%E8%AE%BF%E9%97%AE%E6%9D%83%E9%99%90-public%EF%BC%8Cprotected%EF%BC%8Cprivate/" class="post-title-link" itemprop="url">类的访问权限(public，protected，private)</a>
         </h2>
 
         <div class="post-meta">
@@ -460,14 +207,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-03-09 21:27:02" itemprop="dateCreated datePublished" datetime="2022-03-09T21:27:02+08:00">2022-03-09</time>
+              <time title="创建时间：2022-03-17 23:56:31" itemprop="dateCreated datePublished" datetime="2022-03-17T23:56:31+08:00">2022-03-17</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-10 00:16:08" itemprop="dateModified" datetime="2022-03-10T00:16:08+08:00">2022-03-10</time>
+                <time title="修改时间：2022-03-18 09:45:38" itemprop="dateModified" datetime="2022-03-18T09:45:38+08:00">2022-03-18</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -490,73 +237,71 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="模板实参推断"><a href="#模板实参推断" class="headerlink" title="模板实参推断"></a>模板实参推断</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>）<span class="type">int</span> i = <span class="number">1</span>; <span class="comment">// 普通变量</span></span><br><span class="line"><span class="number">2</span>）<span class="type">const</span> <span class="type">int</span> ci = <span class="number">1</span>; <span class="comment">// 常量</span></span><br><span class="line"><span class="number">3</span>）<span class="type">int</span> &amp;ri = i; <span class="comment">//左值引用</span></span><br><span class="line"><span class="number">4</span>）<span class="type">const</span> <span class="type">int</span> &amp;cri = ci; <span class="comment">//常量左值引用</span></span><br><span class="line"><span class="number">5</span>）<span class="type">int</span> &amp;&amp;rri = <span class="number">1</span>; <span class="comment">// 右值引用</span></span><br><span class="line"><span class="number">6</span>） <span class="number">1</span>; <span class="comment">// 字面值常量，一个右值</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="形参是T"><a href="#形参是T" class="headerlink" title="形参是T"></a>形参是T</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(T val)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="number">1</span>）<span class="type">int</span> i = <span class="number">1</span>; <span class="comment">// 普通变量  -- 类型T推断为int</span></span><br><span class="line"><span class="number">2</span>）<span class="type">const</span> <span class="type">int</span> ci = <span class="number">1</span>; <span class="comment">// 常量 -- 类型T推断为int</span></span><br><span class="line"><span class="number">3</span>）<span class="type">int</span> &amp;ri = i; <span class="comment">//左值引用 -- 类型T推断为int</span></span><br><span class="line"><span class="number">4</span>）<span class="type">const</span> <span class="type">int</span> &amp;cri = ci; <span class="comment">//常量左值引用 -- 类型T推断为int</span></span><br><span class="line"><span class="number">5</span>）<span class="type">int</span> &amp;&amp;rri = <span class="number">1</span>; <span class="comment">// 右值引用 -- 类型T推断为int</span></span><br><span class="line"><span class="number">6</span>） <span class="number">1</span>; <span class="comment">// 字面值常量，一个右值 -- 类型T推断为int</span></span><br></pre></td></tr></table></figure>
-
-<p>我们传递这6种实参，实例化后的模板函数func，<strong>类型T都推断为int</strong>，因为此时是传值，并且顶层const会被忽略（所以传递const int ci，T也推断为int）</p>
-<h3 id="形参是T-amp"><a href="#形参是T-amp" class="headerlink" title="形参是T&amp;"></a>形参是T&amp;</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(T&amp; val)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="number">1</span>）<span class="type">int</span> i = <span class="number">1</span>; <span class="comment">// 普通变量   -- 类型T推断为int</span></span><br><span class="line"><span class="number">2</span>）<span class="type">const</span> <span class="type">int</span> ci = <span class="number">1</span>; <span class="comment">// 常量 -- 类型T推断为const int</span></span><br><span class="line"><span class="number">3</span>）<span class="type">int</span> &amp;ri = i; <span class="comment">//左值引用  -- 类型T推断为int</span></span><br><span class="line"><span class="number">4</span>）<span class="type">const</span> <span class="type">int</span> &amp;cri = ci; <span class="comment">//常量左值引用 -- 类型T推断为const int</span></span><br><span class="line"><span class="number">5</span>）<span class="type">int</span> &amp;&amp;rri = <span class="number">1</span>; <span class="comment">// 右值引用 -- 类型T推断为int &amp;&amp;</span></span><br><span class="line"><span class="number">6</span>） <span class="number">1</span>; <span class="comment">// 字面值常量，一个右值 --编译错误</span></span><br></pre></td></tr></table></figure>
-
-<p>当函数参数是模板类型参数的一个普通左值引用时（即，T&amp;），绑定规则告诉我们，只能传递一个左值，所以情况6）会编译错误，而其他情况正常（<strong>不要忘了，右值引用是一个左值</strong>），实参可以是const类型或非const类型，而根据<strong>底层const不会被忽略规则</strong>，假如实参是const，则T被推断为const。</p>
-<p>当我们传递一个右值引用给模板函数时，类型T推断为int &amp;&amp;，而根据<strong>引用折叠规则</strong>，实际上实例化的函数为 <code>void func(int&amp; val)</code>, 也就是说假如我们在函数体内改变了val的值，会影响到外面的值。</p>
-<h3 id="形参是const-T-amp"><a href="#形参是const-T-amp" class="headerlink" title="形参是const T&amp;"></a>形参是const T&amp;</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(<span class="type">const</span> T&amp; val)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="number">1</span>）<span class="type">int</span> i = <span class="number">1</span>; <span class="comment">// 普通变量   -- 类型T推断为int</span></span><br><span class="line"><span class="number">2</span>）<span class="type">const</span> <span class="type">int</span> ci = <span class="number">1</span>; <span class="comment">// 常量 -- 类型T推断为 int</span></span><br><span class="line"><span class="number">3</span>）<span class="type">int</span> &amp;ri = i; <span class="comment">//左值引用  -- 类型T推断为int</span></span><br><span class="line"><span class="number">4</span>）<span class="type">const</span> <span class="type">int</span> &amp;cri = ci; <span class="comment">//常量左值引用 -- 类型T推断为int</span></span><br><span class="line"><span class="number">5</span>）<span class="type">int</span> &amp;&amp;rri = <span class="number">1</span>; <span class="comment">// 右值引用 -- 类型T推断为int &amp;&amp;</span></span><br><span class="line"><span class="number">6</span>） <span class="number">1</span>; <span class="comment">// 字面值常量，一个右值 -- 类型T推断为int</span></span><br></pre></td></tr></table></figure>
-
-<p>如果一个函数参数类型是const T&amp;，<strong>正常绑定规则告诉我们可以给它传递任何类型实参</strong></p>
-<ul>
-<li>一个对象<ul>
-<li>const</li>
-<li>非const <ul>
-<li>因为可以将一个非const对象的引用（或指针）传递给一个const的引用（或指针）形参</li>
-</ul>
-</li>
-</ul>
-</li>
-<li>纯右值<ul>
-<li>不要忘了，<strong>纯右值可以用来初始化一个常量左值引用</strong></li>
-</ul>
-</li>
-</ul>
-<p>当函数参数本身是const时，T的类型推断的结果不会是一个const类型，因为const已经是函数参数类型的一部分了，它不会再是模板参数类型的一部分。</p>
-<p>同样当我们传递一个右值引用给模板函数时，类型T推断为int &amp;&amp;，而根据<strong>引用折叠规则</strong>，实际上实例化的函数为 <code>void func(const int&amp; val)</code></p>
-<h3 id="形参是T-amp-amp"><a href="#形参是T-amp-amp" class="headerlink" title="形参是T&amp;&amp;"></a>形参是T&amp;&amp;</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(T&amp;&amp; val)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="number">1</span>）<span class="type">int</span> i = <span class="number">1</span>; <span class="comment">// 普通变量   -- 类型T推断为int&amp;</span></span><br><span class="line"><span class="number">2</span>）<span class="type">const</span> <span class="type">int</span> ci = <span class="number">1</span>; <span class="comment">// 常量 -- 类型T推断为 const int&amp;</span></span><br><span class="line"><span class="number">3</span>）<span class="type">int</span> &amp;ri = i; <span class="comment">//左值引用  -- 类型T推断为int&amp;</span></span><br><span class="line"><span class="number">4</span>）<span class="type">const</span> <span class="type">int</span> &amp;cri = ci; <span class="comment">//常量左值引用 -- 类型T推断为const int&amp;</span></span><br><span class="line"><span class="number">5</span>）<span class="type">int</span> &amp;&amp;rri = <span class="number">1</span>; <span class="comment">// 右值引用 -- 类型T推断为int&amp;</span></span><br><span class="line"><span class="number">6</span>） <span class="number">1</span>; <span class="comment">// 字面值常量，一个右值 -- 类型T推断为int</span></span><br></pre></td></tr></table></figure>
-
-<p>当一个函数参数是一个右值引用时，显然我们可以传递一个右值给它，所以情况6），毫无疑问，类型T被推断为int。</p>
-<p>但是情况1-5，显然是一个左值，正常情况下，我们是无法把一个右值引用绑定到左值身上的，但是C++语言指定了一个例外：<strong>当将一个左值传给一个参数为右值引用的模板函数（T&amp;&amp;），此时编译器会推断模板类型参数T为实参的左值引用类型（即，T&amp;）</strong>，同时根据底层引用不会被忽略规则， 情况2和4，T为const int&amp;</p>
-<p>所以一个模板函数形参是右值引用的参数，可以给它传递任何类型实参</p>
-<h2 id="引用折叠"><a href="#引用折叠" class="headerlink" title="引用折叠"></a>引用折叠</h2><p>当形参是T&amp;&amp;， 传递给函数int&amp;的时候，我们可以看到函数的形参val类型是int&amp; &amp;&amp;，也就是引用的引用这种情况，这种情况下，这些引用会形成“折叠”，折叠成左值的引用或者右值的引用。</p>
-<ul>
-<li>X&amp; &amp;、X&amp; &amp;&amp;、X&amp;&amp; &amp;都被折叠成X&amp;</li>
-<li>类型X&amp;&amp; &amp;&amp;被折叠成X&amp;&amp;</li>
-</ul>
-<h2 id="std-move"><a href="#std-move" class="headerlink" title="std::move"></a>std::move</h2><p>标准库的std::move实现如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> t&gt;</span><br><span class="line"><span class="keyword">typename</span> remove_reference&lt;T&gt;::<span class="function">type&amp;&amp; <span class="title">move</span><span class="params">(T&amp;&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<span class="keyword">typename</span> remove_reference&lt;T&gt;::type&amp;&amp;&gt;(t);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>remove_reference顾名思义，作用就是移除引用，比如<code>remove_reference&lt;string&amp;&gt;::type</code>类型是string，所以std::move的返回类型是右值引用，返回值是一个右值（将亡值），（返回类型是一个右值引用的函数的返回值是一个将亡值）</p>
-<h2 id="完美转发（右值引用-引用折叠-forward）"><a href="#完美转发（右值引用-引用折叠-forward）" class="headerlink" title="完美转发（右值引用+引用折叠+forward）"></a>完美转发（右值引用+引用折叠+forward）</h2><h3 id="是什么？"><a href="#是什么？" class="headerlink" title="是什么？"></a>是什么？</h3><p>​    可以把一个函数的实参所有的类型信息全都不变地转发给其他函数，包括实参类型是否是const的以及实参是左值还是右值。</p>
-<p>比如当我们用一个左值调用func时，希望func函数体内调用的是左值版print，当用一个右值调用func时，希望右值版的print被调用。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">(T &amp; t)</span></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Lvalue ref&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print</span><span class="params">(T &amp;&amp; t)</span></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Rvalue ref&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(T &amp;&amp; v)</span></span>&#123;</span><br><span class="line">    <span class="built_in">print</span>(v);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> * argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> x = <span class="number">1</span>;</span><br><span class="line">    <span class="built_in">func</span>(x); <span class="comment">//实参为左值， 希望输出Lvalue ref，实际输出Lvalue ref</span></span><br><span class="line">    <span class="built_in">func</span>(std::<span class="built_in">move</span>(x)); <span class="comment">//实参为右值, 希望输出Rvalue ref，实际输出Lvalue ref</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="如何实现？"><a href="#如何实现？" class="headerlink" title="如何实现？"></a>如何实现？</h3><p>观察模板实参推断4种形参，可知，假如我们需要保存实参的const信息，那形参必须是T&amp; 或者 T&amp;&amp;，同时考虑到T&amp;无法绑定到右值，所以我们只能选用T&amp;&amp;。</p>
-<p>然而当用一个右值调用func时（即，<code>func(std::move(x));</code>)，由上述模板实参推断可知，T推断为int，函数被实例化为<code>void func(int &amp;&amp; v)</code>, 此时v为左值，所以print依然调用左值引用版。</p>
-<p>而模板函数forward可以解决这个问题，forward必须通过显示模板实参来调用，forward返回该显式实参类型的右值引用，即<code>forward&lt;T&gt;</code>的返回类型是T&amp;&amp;。</p>
-<p>现在func修改为：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(T &amp;&amp; v)</span></span>&#123;</span><br><span class="line">    <span class="built_in">print</span>(std::forward&lt;T&gt;(v));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <p>首先明确访问修饰符和派生访问说明符指什么？</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Point</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:  <span class="comment">// 访问修饰符</span></span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="comment">//...</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Point3d</span>: <span class="keyword">public</span> Point &#123;&#125;; <span class="comment">// 派生访问说明符</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Point3d</span>: <span class="keyword">protected</span> Point &#123;&#125;; <span class="comment">// 派生访问说明符</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Point3d</span>: <span class="keyword">private</span> Point &#123;&#125;; <span class="comment">// 派生访问说明符</span></span><br></pre></td></tr></table></figure>
 
 <ul>
-<li>当用一个左值调用func时：<ul>
-<li>T推断为int&amp;</li>
-<li>std::forward&lt;int&amp;&gt; 得到 int&amp;&amp; &amp; ，根据引用折叠规则，即int&amp;， 所以调用左值版本的print</li>
+<li><p><strong>类的成员函数可以直接访问作为其参数的同类型对象的私有成员</strong></p>
+<ul>
+<li>意思就是说假如一个成员函数，有一个参数A是这个类类型，我能在该成员函数里，访问A的所有成员（public，protected和private）。</li>
 </ul>
 </li>
-<li>当用一个右值调用func时：<ul>
-<li>T推断为int</li>
-<li>std::forward<int> 得到 int&amp;&amp; ， 所以调用右值版本的print</li>
+<li><p>一个类的友元函数就相当于这个类的成员函数。</p>
+<ul>
+<li>即，友元函数中可以访问类的所有成员。</li>
+<li>友元函数包括：<ul>
+<li>设为友元的普通的非成员函数</li>
+<li>设为友元的其他类的成员函数</li>
+<li>设为友元类中的所有成员函数。</li>
 </ul>
 </li>
 </ul>
-<p>所以一个完美转发 &#x3D;  右值引用类型的模板函数参数+std::forward</p>
-<h2 id="tips"><a href="#tips" class="headerlink" title="tips"></a>tips</h2><ul>
-<li>C++ primer 要求 move和forward，需要使用std::move 和std::forward， 而不要使用using声明，原因详见18.2.3节。</li>
+</li>
+<li><p>类的对象只能访问类的public成员</p>
+</li>
+<li><p><strong>派生类的成员函数和友元函数可以访问基类的public, protected成员，不能访问private成员</strong></p>
+<ul>
+<li><p>派生类的成员或友元只能通过派生类对象来访问基类的protected成员。派生类无法访问一个基类对象中的protected成员， 即</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Base</span>(<span class="type">int</span> val): <span class="built_in">val</span>(_val) &#123;&#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="type">int</span> _val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>:<span class="keyword">public</span> Base&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Derived</span>(<span class="type">int</span> val = <span class="number">0</span>): <span class="built_in">Base</span>(val) &#123;&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//没问题</span></span><br><span class="line">	<span class="comment">// 派生类的成员函数可以通过派生类对象来访问基类的protected成员</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">func_1</span><span class="params">(<span class="type">const</span> A&amp; rhs)</span></span>&#123;</span><br><span class="line">        cout &lt;&lt; rhs._val&lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 编译错误</span></span><br><span class="line">	<span class="comment">// 派生类无法访问一个基类对象中的protected成员</span></span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func_2</span><span class="params">(<span class="type">const</span> Base&amp; rhs)</span></span>&#123;</span><br><span class="line">		cout &lt;&lt; rhs._val&lt;&lt; endl;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p><strong>派生访问说明符是控制派生类的用户（派生类的对象和派生的派生） 对于派生类中基类成员的访问权限</strong></p>
+<ul>
+<li>也就是派生类中的基类成员是派生类的private还是protected或者public 成员</li>
+<li>基类的private成员永远是派生类的private成员，不管是什么继承</li>
+<li>protected继承和private继承能降低基类的public和protected成员访问权限</li>
+<li>更具体的：</li>
+<li>使用public继承，基类的public、protected成员在派生类仍是public、protected</li>
+<li>使用protected继承，基类的public成员在派生类中变为protected、protected成员仍为protected</li>
+<li>使用private继承，基类的public、protected成员在派生类中变为private</li>
+</ul>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3></li>
+<li><p>private成员可以通过以下方式被访问</p>
+<ul>
+<li>该类中的成员函数</li>
+<li>友元函数</li>
+</ul>
+</li>
+<li><p>protected成员可以通过以下方式被访问</p>
+<ul>
+<li>该类中的成员函数</li>
+<li>友元函数访问</li>
+<li>派生类的成员函数</li>
+<li>派生类的友元函数</li>
+<li>通过public和protected继承，派生类的派生类的成员函数</li>
+</ul>
+</li>
+<li><p>public成员可以通过以下方式被访问</p>
+<ul>
+<li>该类中的成员函数</li>
+<li>友元函数访问</li>
+<li>派生类的成员函数</li>
+<li>派生类的友元函数</li>
+<li>通过public和protected继承，派生类的派生类的成员函数</li>
+<li>通过public继承，派生类的对象</li>
+<li>该类的对象</li>
+</ul>
+</li>
 </ul>
 
       
@@ -577,7 +322,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/09/%E5%B7%A6%E5%80%BC%E5%92%8C%E5%8F%B3%E5%80%BC/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/17/7-3-%E6%89%A7%E8%A1%8C%E6%9C%9F%E7%B1%BB%E5%9E%8B%E8%AF%86%E5%88%AB-RTTI/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -591,7 +336,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/03/09/%E5%B7%A6%E5%80%BC%E5%92%8C%E5%8F%B3%E5%80%BC/" class="post-title-link" itemprop="url">左值和右值</a>
+            <a href="/2022/03/17/7-3-%E6%89%A7%E8%A1%8C%E6%9C%9F%E7%B1%BB%E5%9E%8B%E8%AF%86%E5%88%AB-RTTI/" class="post-title-link" itemprop="url">7.3 执行期类型识别(RTTI)</a>
         </h2>
 
         <div class="post-meta">
@@ -602,137 +347,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-03-09 15:51:36 / 修改时间：23:48:28" itemprop="dateCreated datePublished" datetime="2022-03-09T15:51:36+08:00">2022-03-09</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/C-C-%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">C/C++基础</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="值类别"><a href="#值类别" class="headerlink" title="值类别"></a>值类别</h2><p>自C++11开始，表达式的值分为</p>
-<ul>
-<li><p><code>左值(lvalue, left value)</code></p>
-</li>
-<li><p><code>将亡值(xvalue, expiring value)</code></p>
-</li>
-<li><p><code>纯右值(pvalue, pure ravlue)</code></p>
-</li>
-<li><p>以及两种混合类别：</p>
-<ul>
-<li><code>泛左值(glvalue, generalized lvalue, 左值+将亡值)</code>  </li>
-<li><code>右值(rvalue, right value， 纯右值+将亡值)</code></li>
-</ul>
-</li>
-</ul>
-<p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220309180911.png" alt="image-20220309180908244"></p>
-<h3 id="左值"><a href="#左值" class="headerlink" title="左值"></a>左值</h3><ul>
-<li>左值是有实际存储地址的值（具名），可以通过取地址符<code>&amp;</code>获取其地址</li>
-<li>常见的左值类型<ul>
-<li>变量名、函数名以及数据成员名</li>
-<li>返回左值引用的函数调用</li>
-<li><strong>字符串字面值（如”abc”）</strong></li>
-</ul>
-</li>
-</ul>
-<h3 id="将亡值"><a href="#将亡值" class="headerlink" title="将亡值"></a>将亡值</h3><ul>
-<li>将亡值，顾名思义是即将消亡的值，是有临时存放位置（具名），但是马上要销毁的值（可移动）。</li>
-<li>是跟右值引用相关的表达式，只能通过以下方式来获得：<ul>
-<li>返回右值引用T&amp;&amp;的函数返回值</li>
-<li>std::move的返回值</li>
-<li><code>static_cast&lt;T&amp;&amp;&gt;(t);</code></li>
-</ul>
-</li>
-</ul>
-<h3 id="纯右值"><a href="#纯右值" class="headerlink" title="纯右值"></a>纯右值</h3><ul>
-<li>没有存放位置（非具名），且不可移动的值</li>
-<li>常见的纯右值类型：<ul>
-<li>字面值(字符串字面值除外)，例如1，’a’, true等</li>
-<li>返回值为非引用的函数的返回值</li>
-<li>算术表达式，比如 a+b</li>
-<li>逻辑表达式</li>
-<li>比较表达式</li>
-</ul>
-</li>
-</ul>
-<h3 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h3><ul>
-<li>字符串字面值是左值，其他字面值都是纯右值，一个很重要的原因，就是可以字符串字面值可以<code>获取地址</code>，这是因为<code>C++将字符串字面值实现为char型数组，实实在在地为每个字符都分配了空间并且允许程序员对其进行操作</code>。如果从存储区的概念来理解，那就是字符串字面值存储在<code>常量区</code>。</li>
-</ul>
-<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p>在C++11中，包含如下3中引用：</p>
-<ul>
-<li>左值引用        <code>int&amp; a</code></li>
-<li>常量左值引用  <code>const int&amp; b </code> </li>
-<li>右值引用  <code>int&amp;&amp; c = 10</code></li>
-</ul>
-<p>左值引用和常量左值引用是绑定左值的引用，而右值引用的作用是为了绑定右值。</p>
-<p>为了能区分左值引用和右值引用，代码如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span> &amp;rb = a; <span class="comment">// b为左值引用</span></span><br><span class="line"><span class="type">int</span> &amp;&amp;rrb = a; <span class="comment">// 错误，a是左值，右值引用不能绑定左值</span></span><br><span class="line"><span class="type">int</span> &amp;&amp;rrb1 = <span class="number">1</span>; <span class="comment">// 正确，1为右值</span></span><br><span class="line"><span class="type">int</span> &amp;rb1 = i * <span class="number">2</span>; <span class="comment">// 错误，i * 2是右值，而rb1位左值引用</span></span><br><span class="line"><span class="type">int</span> &amp;&amp;rrb2 = i * <span class="number">2</span>; <span class="comment">// 正确</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> &amp;c = <span class="number">1</span>; <span class="comment">// 正确 可以把一个右值绑定到一个常量左值引用</span></span><br><span class="line"><span class="type">const</span> <span class="type">int</span> &amp;c1 = i * <span class="number">2</span>; <span class="comment">// 正确</span></span><br></pre></td></tr></table></figure>
-
-<h3 id="注意点-1"><a href="#注意点-1" class="headerlink" title="注意点"></a>注意点</h3><ul>
-<li>左值引用和右值引用属于<code>类型</code>,而左值和右值则属于<code>值类别</code>, <strong>右值引用虽然是引用右值，但是其本身是左值，因为一个右值引用也有实际存储地址</strong></li>
-<li>不可以把一个右值绑定到左值引用上，也不可以把一个左值绑定到右值引用上。<strong>但是可以把一个右值绑定到一个常量左值引用。</strong></li>
-</ul>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=Mzk0MzI4OTI1Ng==&mid=2247487751&idx=1&sn=3da21227cb1a4c80e36f91dc823529af&chksm=c33777c0f440fed6f9ebaa7f206f1e423f68c09a809a4d30033f34bd123ccf45d9e42655e199&cur_album_id=2282345872954933250&scene=190#rd">深入理解左值、右值</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/06/7-1-template/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/06/7-1-template/" class="post-title-link" itemprop="url">7.1 template</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-03-06 22:32:42 / 修改时间：22:56:41" itemprop="dateCreated datePublished" datetime="2022-03-06T22:32:42+08:00">2022-03-06</time>
+              <time title="创建时间：2022-03-17 00:29:14 / 修改时间：01:12:06" itemprop="dateCreated datePublished" datetime="2022-03-17T00:29:14+08:00">2022-03-17</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -755,7 +370,32 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          
+          <h3 id="RTTI"><a href="#RTTI" class="headerlink" title="RTTI"></a>RTTI</h3><p>RTTI，指在执行期获取指针所指对象的动态类型</p>
+<ul>
+<li>RTTI 只支持多态类，也就是说没有定义虚函数是的类是不能进行 RTTI的。<ul>
+<li>是因为RTTI的实现是通过vptr来获取存储在虚函数表中的type_info* ，事实上为非多态类提供RTTI,也没有多大意义</li>
+</ul>
+</li>
+<li>对指针进行dynamic_cast失败会返回0 ,而对引用的话，识别会抛出bad_cast exception<ul>
+<li>原因在于指针可以被赋值为0，以表示 no object，但是引用不行。</li>
+</ul>
+</li>
+<li>typeid 可以返回const type_info&amp;，用以获取类型信息。<ul>
+<li>虽然第一点RTTI只支持多态类，但typeid和type_info同样可用于内建类型及所有非多态类。与多态类的差别在于，非多态类的type_info对象是静态取得(所以不能叫“执行期类型识别”)，而多态类的是在执行期获得。</li>
+</ul>
+</li>
+</ul>
+<h3 id="保证安全的向下转换操作"><a href="#保证安全的向下转换操作" class="headerlink" title="保证安全的向下转换操作"></a>保证安全的向下转换操作</h3><p>有以下两种方法：</p>
+<ul>
+<li>dynamic_cast</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base &#123;...&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (Derived *ptr_d = <span class="built_in">dynamic_cast</span>&lt;Derived*&gt;(ptr_b))&#123;</span><br><span class="line">	<span class="comment">// ... 处理ptr_d</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>typeid运算符</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base &#123;...&#125;;</span><br><span class="line"></span><br><span class="line">Base *ptr = <span class="keyword">new</span> Derived;</span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">typeid</span>(ptr) == <span class="built_in">typeid</span>(Derived*))&#123;</span><br><span class="line">	<span class="comment">// ... 处理ptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+
       
     </div>
 
@@ -774,7 +414,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/05/4-2-%E8%99%9A%E6%8B%9F%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E5%AE%9E%E7%8E%B0%E6%A8%A1%E5%9E%8B/">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/17/7-2-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -788,7 +428,159 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/03/05/4-2-%E8%99%9A%E6%8B%9F%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E5%AE%9E%E7%8E%B0%E6%A8%A1%E5%9E%8B/" class="post-title-link" itemprop="url">4.2 虚函数实现模型</a>
+            <a href="/2022/03/17/7-2-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/" class="post-title-link" itemprop="url">7.2 异常处理</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-17 00:12:22 / 修改时间：01:13:20" itemprop="dateCreated datePublished" datetime="2022-03-17T00:12:22+08:00">2022-03-17</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>C++异常处理由三个主要的语汇组件组成：</p>
+<ul>
+<li>一个 throw 自己。它在程序某处发出一个异常。被丢出去的异常可以是内建类型，也可以是使用者自定义类型。</li>
+<li>一个或多个 catch 子句。每个 catch 子句都是一个异常处理。它用来表示，这个子句准备处理某种类型的异常，并且在封闭的大括号区域中提供实际处理<br>程序。</li>
+<li>一个 try 区段。它包含了一系列的语句，这些语句可能会引发 catch 子句起作用。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/16/6-3-%E4%B8%B4%E6%97%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/16/6-3-%E4%B8%B4%E6%97%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/" class="post-title-link" itemprop="url">6.3 临时对象的生命周期</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-16 01:27:18 / 修改时间：01:42:30" itemprop="dateCreated datePublished" datetime="2022-03-16T01:27:18+08:00">2022-03-16</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>很多时候，产生临时对象是必不可少的，但是何时摧毁一个临时对象才是最佳行为呢？过早或过晚都不太适合，过早有可能使得程序错误，过晚的话又使得资源没有得到及时回收。</p>
+<p>C++标准规定临时性对象的摧毁应当作为造成产生这个临时对象的完整表达式的最后一个步骤。比如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">string <span class="title">s1</span><span class="params">(<span class="string">&quot;hello &quot;</span>)</span>, <span class="title">s2</span><span class="params">(<span class="string">&quot;world &quot;</span>)</span>,<span class="title">s3</span><span class="params">(<span class="string">&quot;by Adoo&quot;</span>)</span></span>;</span><br><span class="line">std::cout&lt;&lt;s1+s2+s3&lt;&lt;std::endl;</span><br></pre></td></tr></table></figure>
+
+<p>s1+s2结果的临时对象，会在cout整条语句结束的时候析构。</p>
+<p>此外，C++ standard又有两个特例（不用关注, 没什么意义)：</p>
+<ul>
+<li><p>凡含有表达式执行结果的临时对象，应该存留到object的初始化操作完成为止。</p>
+</li>
+<li><p>如果一个临时性对象被绑定于一个reference，对象将会被残留，直到被初始化的reference声明结束，或临时对象的生命期结束。</p>
+</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/15/6-2-new%E5%92%8Cdelete%E8%BF%90%E7%AE%97%E7%AC%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/15/6-2-new%E5%92%8Cdelete%E8%BF%90%E7%AE%97%E7%AC%A6/" class="post-title-link" itemprop="url">6.2 new和delete运算符</a>
         </h2>
 
         <div class="post-meta">
@@ -798,14 +590,14 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2022-03-05 22:32:35" itemprop="dateCreated datePublished" datetime="2022-03-05T22:32:35+08:00">2022-03-05</time>
+              <time title="创建时间：2022-03-15 02:47:21" itemprop="dateCreated datePublished" datetime="2022-03-15T02:47:21+08:00">2022-03-15</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-06 15:38:30" itemprop="dateModified" datetime="2022-03-06T15:38:30+08:00">2022-03-06</time>
+                <time title="修改时间：2022-03-16 01:15:05" itemprop="dateModified" datetime="2022-03-16T01:15:05+08:00">2022-03-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -828,488 +620,571 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <blockquote>
-<p>在C++中, 多态表示“以一个基类的指针或引用，寻址出一个子类的意思</p>
-</blockquote>
-<h2 id="虚函数的一般模型："><a href="#虚函数的一般模型：" class="headerlink" title="虚函数的一般模型："></a>虚函数的一般模型：</h2><ul>
-<li>每一个含有虚函数的类有一个虚函数表，里面包含了这个类里面所有虚函数的地址和该类类型信息， 然后这个类的每个对象有一个虚表指针，指向这个虚函数表。</li>
-</ul>
-<h2 id="单继承模型"><a href="#单继承模型" class="headerlink" title="单继承模型"></a>单继承模型</h2><h3 id="实现机制"><a href="#实现机制" class="headerlink" title="实现机制"></a>实现机制</h3><p>单继承虚函数的实现机制就是虚函数的一般模型，用这种模型来实现虚函数得益于在C++中,虚函数的地址在编译期是可知的，而且这一地址是固定不变的。而且表的大小不会在执行期增大或减小。</p>
-<h3 id="虚表中有什么？"><a href="#虚表中有什么？" class="headerlink" title="虚表中有什么？"></a>虚表中有什么？</h3><p>一个类的虚函数表中存储 类型信息（通常存储在索引为0的位置）和所有虚函数地址。这些虚函数包括三种：</p>
-<ul>
-<li>这个类定义的虚函数，假如基类也定义有这个虚函数，那会改写虚表中相同索引值存储的地址。</li>
-<li>继承自基类的虚函数实体，——基类定义有，而这个类却没有定义。直接继承之。</li>
-<li>一个纯虚函数实体。用来在虚函数表中占座，有时候也可以当做执行期异常处理函数。</li>
-</ul>
-<p>每一个虚函数都被指派一个固定的索引值，这个索引值在整个继承体系中保持前后关联，例如,假如z()在基类虚函数表中的索引值为2，那么在子类的虚函数表的索引值也为2。</p>
-<h3 id="虚表的构建步骤"><a href="#虚表的构建步骤" class="headerlink" title="虚表的构建步骤"></a>虚表的构建步骤</h3><p>当一个类单继承自有虚函数的基类的时候，将按如下步骤构建虚函数表：</p>
-<ul>
-<li>继承基类中声明的虚函数——这些虚函数的实体地址被拷贝到继承类中的虚函数表中相同的slot中。</li>
-<li>如果有改写（override）基类的虚函数，那么在1中应将改写（override）的函数实体的地址放入对应的slot中而不是拷贝基类的。</li>
-<li>如果有定义新的虚函数，那么将虚函数表扩大一个slot以存放新的函数实体地址。</li>
-</ul>
-<h3 id="虚函数是怎么被调用的"><a href="#虚函数是怎么被调用的" class="headerlink" title="虚函数是怎么被调用的"></a>虚函数是怎么被调用的</h3><p>当我们用指针或者引用去调用一个虚函数时，编译将做一个小小的转换:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Point3d是Point的子类，虚函数z()在Point类虚函数表中的索引为4</span></span><br><span class="line">Point *ptr = <span class="keyword">new</span> <span class="built_in">Point3d</span>();</span><br><span class="line"></span><br><span class="line">ptr-&gt;<span class="built_in">z</span>(); </span><br><span class="line"><span class="comment">// 将被编译器转为 </span></span><br><span class="line">(*ptr-&gt;vptr[<span class="number">4</span>])(ptr);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+          <h2 id="new和delete语意"><a href="#new和delete语意" class="headerlink" title="new和delete语意"></a>new和delete语意</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *ptr = <span class="keyword">new</span> <span class="built_in">int</span>(<span class="number">5</span>);</span><br><span class="line"><span class="keyword">delete</span> ptr;</span><br></pre></td></tr></table></figure>
 
-<p>这个转换保证了调用到正确的实体，因为：</p>
-<ul>
-<li>虽然我们不知道ptr所指的真正类型,但它可以通过vptr找到正确类型的虚函数表。</li>
-<li>并且在整个继承体系中z()的地址总是被放在slot 4。</li>
-</ul>
-<p>其实也就是通过虚表指针找到虚函数表，并且虚函数在虚表里的索引是固定的，在编译期就能确定，所以能找到真正要执行的虚函数。</p>
-<h2 id="多重继承"><a href="#多重继承" class="headerlink" title="多重继承"></a>多重继承</h2><ul>
-<li><p>在多重继承下，继承类需要为每一条继承线路维护一个虚函数表</p>
-</li>
-<li><p>当使用第一继承的基类指针来调用继承类的虚函数的时候，与单继承的情况没有什么异样，问题出生在当以第二或后继的基类指针（或引用）的使用上。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//假设有这样的继承关系：class Derived:public base1,public base2;</span></span><br><span class="line"><span class="comment">//base1,base2都定义有虚析构函数。</span></span><br><span class="line">base2 *ptr = <span class="keyword">new</span> derived;</span><br><span class="line"><span class="comment">//需要被转换为以下代码（这个转换在编译期完成）</span></span><br><span class="line">base2 *ptr = temp ? temp + <span class="built_in">sizeof</span>(base1) : <span class="number">0</span> ;</span><br></pre></td></tr></table></figure>
-
-<p>如果不做出上面的转换，那么 ptr 指向的并不是 derived 的 base2 subobject, 那么ptr的所有非多态运用都将失败, 比如 ptr-&gt;val (实际编译器会转为<code>*（ptr+偏移）</code>)</p>
-<p>当要delete ptr时又面临了一次转换，因为在delete ptr的时候，需要对整个对象而不是其子对象施行delete运算符，这期间需要调整ptr指向完整的对象起点，因为不论是调用正确的析构函数还是delete运算符都需要一个指向对象起点的指针，想一想给予一个derived类的成员函数指向base2 subobjuect 的this指针会发生什么吧。因为ptr的具体类型并不知道，所以必须要等到执行期来完成。</p>
-</li>
-</ul>
-<h3 id="什么时候需要调整this指针"><a href="#什么时候需要调整this指针" class="headerlink" title="什么时候需要调整this指针"></a>什么时候需要调整this指针</h3><ul>
-<li><p>继承类类型指针向第2，第3 ….基类类型指针赋值的情况下，需要调整指针指向对应的subobject</p>
-</li>
-<li><p>通过一个指向派生类的指针，调用从第2，第3…..基类继承而来的虚函数（潜台词，没有覆盖），需要调整指针指向对应的subobject</p>
-</li>
-<li><p>第2，第3 ….基类类型指针对继承类虚函数进行调用的时候，需要将指向subobject的指针调整回继承类对象的起始点</p>
-</li>
-</ul>
-<h3 id="如何调整this指针"><a href="#如何调整this指针" class="headerlink" title="如何调整this指针"></a>如何调整this指针</h3><p>实现方法有以下两种：</p>
-<ul>
-<li>将每一个虚函数表的slot扩展，以使之存放一个额外的偏移量。于是虚函数的调用：</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(*ptr-&gt;vptr[<span class="number">1</span>])(ptr);</span><br><span class="line"><span class="comment">//将变成：</span></span><br><span class="line">(*ptr-&gt;vptr[<span class="number">1</span>].addr)(ptr+*ptr-&gt;vptr[<span class="number">1</span>].offset);</span><br></pre></td></tr></table></figure>
-
-<p>也就是虚函数表里的每个表项是一个结构体，存着虚函数地址和相应的偏移。其中使用<code>ptr-&gt;vptr[1].addr</code>用以获取正确的虚函数地址，而<code>ptr+*ptr-&gt;vptr[1].offset</code>来获得指向对象完整的起点。</p>
-<p>这种方法的缺点显而易见，代价过大了一点，所有的情况都被这一种占比较小的情况拖累（哪怕是通过derived指针调用derived的虚函数这种不需要调整的情况）。</p>
-<ul>
-<li><strong>还有一种叫做thunk的方法(比较好)</strong><ul>
-<li>thunk是一小段代码，代码的逻辑是：<ul>
-<li>调整this指针</li>
-<li>执行相应的虚函数</li>
+<p>当我们使用一条new 语句时，实际执行了以下操作：</p>
+<ol>
+<li>调用名为operator new的标准库函数，分配所需的内存</li>
+<li>将配置得来的对象设立初值<ul>
+<li>假如是内置对象，有显式初值，则设为显式初值，否则，其值是未定义的（上一次这块内存被使用时，遗留下来的值）</li>
+<li>假如是类对象，则调用对应的构造函数</li>
 </ul>
 </li>
-<li>所以虚表的表项依旧是一个指针，当不需要调整this指针的时候，指针指向的是相应的虚函数；当需要调整this指针的时候，指向的是thunk。</li>
-</ul>
-</li>
-</ul>
-<h3 id="实现机制-1"><a href="#实现机制-1" class="headerlink" title="实现机制"></a>实现机制</h3><p><strong>每一条继承线路都会维护一个虚函数表，所以一个子类，会有n个虚表指针，指向n个不同的虚表</strong>。其中：</p>
-<ul>
-<li>一个主要实例，与Base1（也就是派生列表里最左端的那个基类）<strong>共享</strong>。</li>
-<li>n-1个次要实例，与除Base1以外的其他基类<strong>有关</strong>。</li>
-</ul>
-<p>共享的意思就是这个虚表里存的是派生类所有可以调用的虚函数地址，即派生类自己定义的虚函数 + 继承自Base1，Base2等所有基类的虚函数（没有被派生类重写）。</p>
-<p>有关的意思就是这n-1个虚函数，存的分别是Base2，Base3….等基类原来就有的虚函数，只是会重写，而不会扩张。</p>
-<p>而虚函数的调用其实跟单继承的情况类似， 编译器会将这行代码改写，通过vptr来调用相应的虚函数，比单继承多的一种情况就是需要通过一些方法（比如thunk）来调整this指针。</p>
-<h3 id="虚继承"><a href="#虚继承" class="headerlink" title="虚继承"></a>虚继承</h3><p>其复杂性同样在于指针值的运行时修改（涉及到虚基类指针vbtr）。</p>
-<p>另外书中建议不要在虚基类中声明非静态的数据成员.</p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/04/5-%E5%AE%9E%E7%8E%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/04/5-%E5%AE%9E%E7%8E%B0/" class="post-title-link" itemprop="url">5 实现</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-04 16:03:22" itemprop="dateCreated datePublished" datetime="2022-03-04T16:03:22+08:00">2022-03-04</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-08 09:55:53" itemprop="dateModified" datetime="2022-03-08T09:55:53+08:00">2022-03-08</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Effective-C/" itemprop="url" rel="index"><span itemprop="name">Effective C++</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/02/4-4-inline%E5%87%BD%E6%95%B0/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/02/4-4-inline%E5%87%BD%E6%95%B0/" class="post-title-link" itemprop="url">4.4 inline函数</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-03-02 19:44:29 / 修改时间：19:51:38" itemprop="dateCreated datePublished" datetime="2022-03-02T19:44:29+08:00">2022-03-02</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="什么时候是内联函数"><a href="#什么时候是内联函数" class="headerlink" title="什么时候是内联函数"></a>什么时候是内联函数</h2><p>在下面的情况下, 一个函数是inline函数:</p>
-<ul>
-<li>声明中包含inline关键字的函数</li>
-<li>当一个函数(成员函数或非成员友元函数)的定义在类内部时</li>
-<li>被声明为constexpr的函数(since C++11)</li>
-</ul>
-<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ul>
-<li><p>inline函数只是一种建议, 建议编译器将对inline函数的调用转换, 但是编译器并不一定会接受该建议, 而且非inline函数也有可能被转换, 这依赖于具体实现.</p>
-</li>
-<li><p>inline函数可能会增加生成的文件的大小.</p>
-</li>
-<li><p>inline函数尽可能简单. 减少不必要的局部变量, 否则可能会在结果中产生大量的局部变量.(现在的编译器应该可以优化这个了吧)</p>
-</li>
-</ul>
-<h2 id="内联函数写法示例"><a href="#内联函数写法示例" class="headerlink" title="内联函数写法示例"></a>内联函数写法示例</h2><h3 id="普通内联函数"><a href="#普通内联函数" class="headerlink" title="普通内联函数"></a>普通内联函数</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">square</span><span class="params">(<span class="type">int</span>&amp; x)</span> </span>&#123;</span><br><span class="line">	x *= x;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="type">int</span> num = <span class="number">5</span>;</span><br><span class="line">	<span class="built_in">square</span>(num);</span><br><span class="line">	std::cout &lt;&lt; num &lt;&lt; std::endl;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="成员函数内联"><a href="#成员函数内联" class="headerlink" title="成员函数内联"></a>成员函数内联</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># A.h</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">int</span> <span class="title">get_val</span><span class="params">()</span></span>; <span class="comment">// // 成员函数声明的时候，也可以加inline，但最好是在函数定义的时候声明</span></span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">set_val</span><span class="params">(<span class="type">int</span> _val)</span> </span>&#123; val = _val; &#125; <span class="comment">// 定义在类内部的函数是隐式内联的</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 显式内联， 还是在A.h，而不是A.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">int</span> <span class="title">A::get_val</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="内联模板函数"><a href="#内联模板函数" class="headerlink" title="内联模板函数"></a>内联模板函数</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">inline</span> T <span class="title">min</span><span class="params">(<span class="type">const</span> T&amp; lhs, <span class="type">const</span> T&amp; rhs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> lhs &lt; rhs?lhs:rhs</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/02/1-%E8%AE%A9%E8%87%AA%E5%B7%B1%E4%B9%A0%E6%83%AF-C/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/02/1-%E8%AE%A9%E8%87%AA%E5%B7%B1%E4%B9%A0%E6%83%AF-C/" class="post-title-link" itemprop="url">1 让自己习惯 C++</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-03-02 12:52:54 / 修改时间：19:42:45" itemprop="dateCreated datePublished" datetime="2022-03-02T12:52:54+08:00">2022-03-02</time>
-            </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Effective-C/" itemprop="url" rel="index"><span itemprop="name">Effective C++</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="1-视C-为一个语言联邦"><a href="#1-视C-为一个语言联邦" class="headerlink" title="1. 视C++为一个语言联邦"></a>1. 视C++为一个语言联邦</h3><p>C++是从四个次语言</p>
-<ul>
-<li>C</li>
-<li>Object-Oriented C++  (封装，继承，多态)</li>
-<li>Template C++ (模板)</li>
-<li>STL  （容器，迭代器， 算法， 函数对象）</li>
-</ul>
-<p>组成的联邦政府，每个语言都有自己的规约。</p>
-<h3 id="2-尽量以const-enum-inline替换-define"><a href="#2-尽量以const-enum-inline替换-define" class="headerlink" title="2. 尽量以const, enum, inline替换#define"></a>2. 尽量以const, enum, inline替换#define</h3><ul>
-<li><p>对于单纯的常量，最好以const对象或enums替换#define</p>
-<ul>
-<li><p>假如需要的是一个全局常量</p>
-<ul>
-<li><pre><code class="c++">#define PI 3.14
-const int Pi = 3.14;
-</code></pre>
-</li>
-<li><p>使用const, 编译链接后的文件会更小，因为宏定义只是简单的替换，会导致出现多份3.14， 并且当发生编译错误的时候，更容易理解错误信息，因为PI不会进入符号表，错误信息显示的是<code>3.14 error</code>而不会是<code>PI error</code></p>
-</li>
-</ul>
-</li>
-<li><p>类的常量数据成员</p>
-<ul>
-<li>#define 并没有public, private 作用域的概念，所以不适合</li>
-</ul>
-</li>
-<li><p>数组的大小</p>
-<p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220302193925.png" alt="image-20220302193925071"></p>
-</li>
-</ul>
-</li>
-<li><p>对于形似函数的宏，最好改用inline函数替换#define</p>
-</li>
-</ul>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/01/4-3-%E6%8C%87%E5%90%91%E7%B1%BB%E6%88%90%E5%91%98%E7%9A%84%E6%8C%87%E9%92%88%EF%BC%88%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%92%8C%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%EF%BC%89/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="wyl">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Love WL Forever">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/03/01/4-3-%E6%8C%87%E5%90%91%E7%B1%BB%E6%88%90%E5%91%98%E7%9A%84%E6%8C%87%E9%92%88%EF%BC%88%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%92%8C%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%EF%BC%89/" class="post-title-link" itemprop="url">4.3 指向类成员的指针（数据成员和函数成员）</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2022-03-01 23:11:03" itemprop="dateCreated datePublished" datetime="2022-03-01T23:11:03+08:00">2022-03-01</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-03-02 18:27:40" itemprop="dateModified" datetime="2022-03-02T18:27:40+08:00">2022-03-02</time>
-              </span>
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-folder"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
-                </span>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h3 id="指向普通数据成员"><a href="#指向普通数据成员" class="headerlink" title="指向普通数据成员"></a>指向普通数据成员</h3><ul>
-<li>形式：<ul>
-<li>类型 类名::* 指针名 &#x3D; &amp;类名::成员名</li>
-<li><code>int Bear::* ptr = &amp;Bear::val</code></li>
-<li>ptr是指向Bear类里int类型的指针， ptr的值是成员变量val在Bear类里的偏移+1</li>
-</ul>
-</li>
-<li><strong>注意点</strong>：<ul>
-<li><code>&amp;Bear::val</code> 的值是成员变量val在Bear类里的偏移 + 1</li>
-</ul>
-</li>
-</ul>
-<h3 id="指向静态数据成员"><a href="#指向静态数据成员" class="headerlink" title="指向静态数据成员"></a>指向静态数据成员</h3><ul>
-<li>形式：<ul>
-<li>类型 *指针名 &#x3D; &amp;类名::成员名</li>
-<li><code>int *ptr = &amp;Bear::cnt</code></li>
-<li>ptr是指向int类型的指针，ptr的值是Bear::cnt在内存中的地址</li>
-</ul>
-</li>
-<li><strong>注意点</strong>：<ul>
-<li>指向静态数据成员的指针，其实就是一个普通的指针，值是静态数据成员在内存中的地址。</li>
-</ul>
-</li>
-</ul>
-<h3 id="指向非static函数成员"><a href="#指向非static函数成员" class="headerlink" title="指向非static函数成员"></a>指向非static函数成员</h3><ul>
-<li><p>形式：</p>
-<ul>
-<li>返回类型 (类名::*指针名)(形参类型列表) &#x3D; &amp;类名::成员函数名</li>
-<li><code>void (Bear::*ptr)(string) = &amp;Bear::speak</code></li>
-<li>ptr是指向Bear类里 <code>void (string)</code>类型的函数的指针， ptr的指向的是Bear类里speak函数成员。（当speak是一个普通函数成员（非虚函数）的时候，ptr的值是speak函数的地址）</li>
-</ul>
-</li>
-<li><p>使用方式：</p>
-<ul>
-<li><p>&#96;&#96;&#96;c++<br>Bear obj;<br>Bear *p_obj &#x3D; &amp;obj;<br>void (Bear::*ptr)(string) &#x3D; &amp;Bear::speak;</p>
-<p>(obj.*ptr)(“hello, world”);<br>(p_obj-&gt;*ptr)(“hello, world”);</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">+ 非static成员函数包括虚函数，而指向非static函数成员是支持虚拟机制的，如下所示：</span><br><span class="line"></span><br><span class="line">  ```c++</span><br><span class="line">  float (Point::*pmf)() = &amp;Point::z; // z是一个虚函数</span><br><span class="line">  Point *ptr = new Point3d;</span><br><span class="line">  </span><br><span class="line">  (ptr-&gt;*pmf)(); // 实际调用的是Point3d::z() 而不是Point::z()</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-<li><p>实现原理：</p>
-<ul>
-<li><ol>
-<li>当成员函数指向一个普通函数的时候，其值是这个成员函数的地址。</li>
 </ol>
-</li>
-<li><ol start="2">
-<li>早期C++，只考虑单一继承，且非虚继承的情况下，当成员函数指针指向虚函数的时候，其值是该函数在虚表中的偏移。（因此 <code>(ptr-&gt;*pmf)()</code> 会被编译器重写为</li>
+<p>delete语句类似：</p>
+<ol>
+<li>调用相应的析构函数</li>
+<li>调用名为operator delete的标准库函数，释放所需的内存</li>
 </ol>
-</li>
-</ul>
-<p>  <code>(*ptr-&gt;vptr[(int)pmf])(ptr)</code>,  而基类的虚函数和子类重写的虚函数，在各自的虚表中，偏移是一样的，所以<code>(ptr-&gt;*pmf)() </code>实际调用的是<code>Point3d::z()</code> 而不是<code>Point::z()</code></p>
+<h3 id="delete-ptr之后的事情"><a href="#delete-ptr之后的事情" class="headerlink" title="delete ptr之后的事情"></a>delete ptr之后的事情</h3><p>当我们delete ptr之后，ptr所指的那块内存被释放，但是内存释放的时候<strong>，只是把这块内存标记为未使用，并没有清零</strong>（出于性能的考虑）， 也就是说<strong>delete ptr的操作，并没有去改变ptr指向的那块内存的值，并且ptr 的值是不变的</strong>，只是变成了野指针。但是我们无法保证那块内存会不会被程序其他地方再使用，里面的内容会不会被变更， 也就是说那块<strong>内存的内容是未定义</strong>的。</p>
+<p>这也解释了以下问题：</p>
 <ul>
-<li><p>早期的C++，把1和2两种值都放在同一个指针里面，而区分他们的方法是，限制限制虚表长度为128， 所以情况2，最大值为127. 而程序空间起始地址必定大于127, 因此可以通过将指针值和127做”&amp;”(按位与)运算来判断是偏移还是函数地址.， 即</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(((<span class="type">int</span>)pmf) &amp; ~<span class="number">127</span>) ? (*pmf)(ptr) : (*ptr-&gt;vptr[(<span class="type">int</span>)pmf])(ptr);</span><br></pre></td></tr></table></figure>
+<li>能否两次delete ptr？<ul>
+<li>能否delete两次，取决于编译器，有的编译器比较严格，假如delete一块标记为未使用的内存会报错，而有的不会。但是考虑第二次delete ptr的时候，ptr所指的内存可能已经被程序别的地方使用了，此时delete就可能会导致错误，所以我们不应该两次delete ptr。</li>
+</ul>
 </li>
-<li><p>而现在为了支持多重继承，虚继承，实现方法已经不同了，早期的一种实现方法是，将成员函数指针指向一个结构体, 包含this指针偏移, 虚基类指针偏移等等. 但是会带来一个问题，对于那些普通成员函数，会带来额外负担。而现在的一种实现是单继承, 多继承, 虚继承就采用不同的方式来实现，减小负担。（但具体怎么实现的不明）</p>
-</li>
+<li>使用一个野指针的问题？<ul>
+<li>因为野指针所指的内存内容是未定义的，所以使用野指针的行为也是未定义的，可能会导致错误。</li>
 </ul>
 </li>
 </ul>
-<h3 id="指向static函数成员"><a href="#指向static函数成员" class="headerlink" title="指向static函数成员"></a>指向static函数成员</h3><ul>
-<li>形式：<ul>
-<li>返回类型 （*指针名）(形参类型列表) &#x3D; &amp;类名::成员函数名</li>
-<li><code>void (*ptr)(string) = &amp;Bear::speak</code></li>
-<li>ptr是 <code>void (string)</code>类型的函数的指针，ptr的值是speak函数的地址）</li>
+<h2 id="new-和-delete"><a href="#new-和-delete" class="headerlink" title="new[] 和 delete[]"></a>new[] 和 delete[]</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *ptr = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">5</span>]; <span class="comment">// 5个值未定义</span></span><br><span class="line"><span class="type">int</span> *ptr = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">5</span>](); <span class="comment">// 5个值进行值初始化，内置类型初始化为0，类类型调用默认构造函数</span></span><br><span class="line"><span class="type">int</span> *ptr = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">5</span>]&#123;<span class="number">1</span>,<span class="number">2</span>&#125;; <span class="comment">// 前2个值用给定的初始化器初始化，后面的3个进行值初始化：</span></span><br><span class="line"><span class="keyword">delete</span>[] ptr;</span><br></pre></td></tr></table></figure>
+
+<p>当我们使用一条new[] 语句时，实际执行了以下操作：</p>
+<ol>
+<li>调用名为operator new[]的标准库函数，分配所需的内存</li>
+<li>挨个将配置得来的对象设立初值<ul>
+<li>初始化方式进上面的代码</li>
 </ul>
 </li>
-<li><strong>注意点</strong>：<ul>
-<li>指向静态函数成员的指针，其实就是一个普通的指向函数的指针，值是静态函数成员在内存中的地址。</li>
+</ol>
+<p>delete[]语句类似：</p>
+<ol>
+<li>反方向，即从最后到最前面，挨个调用相应的析构函数</li>
+<li>调用名为operator delete[]的标准库函数，释放所需的内存</li>
+</ol>
+<h3 id="delete-详解"><a href="#delete-详解" class="headerlink" title="delete[] 详解"></a>delete[] 详解</h3><ul>
+<li>delete[]如何知道数组的维度？<ul>
+<li>在new[]语句分配的内存，额外分配一块区域用来存储数组的维度。</li>
+</ul>
+</li>
+<li>delete 和 delete[] 语句的区别？<ul>
+<li>delete[]语句时，编译器才会知道要寻找数组的维度，否则它便假设只有单独一个objects要被删除，只会调用一次析构函数，所以假如对于本该使用delete[]，而错误的使用了delete语句，当对象的析构函是有用的时候（比如释放堆上的内存），就会导致错误。</li>
 </ul>
 </li>
 </ul>
+<h2 id="重载operator-new-和operator-delete"><a href="#重载operator-new-和operator-delete" class="headerlink" title="重载operator new 和operator delete"></a>重载operator new 和operator delete</h2><p>首先分清楚 new、delete语句和operator new、operator delete是不一样的（比如new语句包括operator new分配内存和调用构造函数初始化对象）。我们可以重载operator new 和operator delete，但是无法重定义 new、delete语句。</p>
+<p>标准库重载有两个版本的operator new，分别为单个对象和数组对象服务，单个对象版本的提供给分配单个对象new expression调用，数组版的提供给分配数组的 new expression 调用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> *<span class="keyword">operator</span> <span class="title">new</span><span class="params">(<span class="type">size_t</span>)</span></span>;</span><br><span class="line"><span class="type">void</span> *<span class="keyword">operator</span> <span class="keyword">new</span>[](<span class="type">size_t</span>);</span><br><span class="line"><span class="function"><span class="type">void</span> *<span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>*)</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line"><span class="type">void</span> *<span class="keyword">operator</span> <span class="keyword">delete</span>[](<span class="type">void</span>*) <span class="keyword">noexcept</span>;</span><br></pre></td></tr></table></figure>
+
+<p>我们可以分别重载这4个函数，来定义我们自己的分配\释放单个对象或对象数组的内存方式。</p>
+<h2 id="定位new-（placement-new）"><a href="#定位new-（placement-new）" class="headerlink" title="定位new （placement new）"></a>定位new （placement new）</h2><p>定位new的调用方式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Point *ptr = <span class="built_in">new</span>(area) Point; <span class="comment">// 其中 area指向内存中的一个区域</span></span><br></pre></td></tr></table></figure>
+
+<p>定位new用来在指定地址上构造对象，要注意的是，它并不分配内存，仅仅是对指定地址调用构造函数。</p>
+<p>一条定位new语句时，实际执行了以下操作：</p>
+<ol>
+<li>调用名为placement operator new的标准库函数</li>
+<li>将配置得来的对象设立初值</li>
+</ol>
+<p>placement operator new它是operator new的一个重载版本。它的实现方式异常简单，传回一个指针即 可：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(<span class="type">site_t</span>,<span class="type">void</span> *p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> p;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><ul>
+<li>书中提到不要用一个基类指针指向派生类的数组，因为delete[]的时候，是根据被删除指针的类型来调用析构函数，也就是说虚函数机制在这儿不起作用了。然而实际的测试结果，支持虚函数，即派生类的析构函数被正确的调用了，所以<strong>可以用一个基类指针指向派生类的数组</strong></li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/15/6-1-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/15/6-1-%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%9E%84%E9%80%A0%E5%92%8C%E6%9E%90%E6%9E%84/" class="post-title-link" itemprop="url">6.1 对象的构造和析构</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-15 02:11:09 / 修改时间：02:46:50" itemprop="dateCreated datePublished" datetime="2022-03-15T02:11:09+08:00">2022-03-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>当程序离开当前作用域的时候，会调用当前作用域所有对象的析构函数，因此<strong>为了减少不必要的构造对象和析构对象的代码被插入到自己的代码当中，尽可能将对象定义在接近要使用的地方。</strong></p>
+<h2 id="全局对象"><a href="#全局对象" class="headerlink" title="全局对象"></a>全局对象</h2><p>一个全局对象，c++保证它在<code>main()</code>在第一次使用它之前将其构造，而在<code>main()</code>结束之前，将之析构掉。全局对象的初始化顺序如下：</p>
+<ul>
+<li>编译期，将全局对象分配至global区内存空间<ul>
+<li>假如使用常量表达式来进行初始化全局对象，则设置值</li>
+<li>否则，由于global区内存空间全是0比特，全局对象的值为0</li>
+</ul>
+</li>
+<li>运行期，在main函数的一开始，调用对应构造函数初始化所有全局对象。</li>
+</ul>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>使用全局对象的坏处是：</p>
+<ul>
+<li>不同文件中的全局对象构造顺序未定义，如果互相之间存在依赖关系的话，会产生未知的结果</li>
+<li>一个全局对象如果构造过程中抛出异常，无法来捕获并处理这个异常，所以会导致程序的终结</li>
+</ul>
+<p>所以书中建议：根本就不要使用那些类类型的全局对象。<strong>如果真的需要一个全局对象，那么用一个函数封装一个局部静态对象，也是一样的效果</strong>。</p>
+<h2 id="局部静态对象"><a href="#局部静态对象" class="headerlink" title="局部静态对象"></a>局部静态对象</h2><p>局部静态对象的写法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">const</span> Matrix&amp;  <span class="title">identity</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="type">static</span> Matrix mat_identity;  </span><br><span class="line">    <span class="comment">// ...  </span></span><br><span class="line">    <span class="keyword">return</span> mat_identity;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C++标准规定，局部静态对象在第一次被调用时被构造，而在整个程序退出之时按构造相反的顺序析构局部静态对象。</p>
+<p>对于上述机制，有一种实现策略：</p>
+<ul>
+<li>添加一个全局变量（类型为指向该局部静态变量的指针，初始值为nullptr）用来标识有没有初始化该局部静态变量，当第一次调用函数，碰到处局部静态变量，全局变量值为nullptr，于是调用构造函数，随后将全局变量值设置为该局部静态变量的地址。而当程序退出的时候，根据这个全局变量，决定是否调用相应析构函数。</li>
+</ul>
+<h3 id="对象数组"><a href="#对象数组" class="headerlink" title="对象数组"></a>对象数组</h3><p>对于定义一个普通的数组，例如：</p>
+<p><code>Point knots[ 10 ];</code></p>
+<p>实际上背后做的工作则是：</p>
+<ul>
+<li>分配充足的内存以存储10个Point元素</li>
+<li>为每个Point元素调用它们的相应的构造函数<ul>
+<li>如果显示提供了构造函数，则调用对应的构造函数，不足的调用默认构造函数(如果有的话，且不论是合成的还是显式定义的)，比如<ul>
+<li>point i[10] &#x3D; {point(), point(1,2,3)}）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>当数组的生命周期结束的时候，则要逐一调用析构函数，然后回收内存。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/15/5-4-%E6%9E%90%E6%9E%84%E8%AF%AD%E6%84%8F%E5%AD%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/15/5-4-%E6%9E%90%E6%9E%84%E8%AF%AD%E6%84%8F%E5%AD%A6/" class="post-title-link" itemprop="url">5.4 析构语意学</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-15 01:22:38 / 修改时间：02:02:03" itemprop="dateCreated datePublished" datetime="2022-03-15T01:22:38+08:00">2022-03-15</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>如果类没有定义析构函数，那么<strong>只有在类内置的数据成员或者类的基类拥有程序员定义的析构函数的情况下，编译器才会合成出一个</strong>。否则，析构函数将会被视为不需要，自然也就不需要被合成（更不需要被调用）。</p>
+<h2 id="什么时候需要程序员定义析构函数"><a href="#什么时候需要程序员定义析构函数" class="headerlink" title="什么时候需要程序员定义析构函数"></a>什么时候需要程序员定义析构函数</h2><p>书中提到一个值得注意的问题, 并不是定义了构造函数就需要定义析构函数, 这种”对称”是无意义的. 只有当需要一个析构函数时, 我们才应该显式定义之. 那么什么时候需要呢? 首先要搞清楚析构函数的作用, 她是对象的生命周期的终结, 而函数体内执行的主要是是对对象持有的资源的释放, 例如在构造函数中动态申请的空间. </p>
+<h2 id="析构函数操作顺序"><a href="#析构函数操作顺序" class="headerlink" title="析构函数操作顺序"></a>析构函数操作顺序</h2><p>析构函数的操作与构造函数的顺序相反：</p>
+<ul>
+<li>本身的析构函数被执行。</li>
+<li>以声明的相反顺序调用member object 的析构函数</li>
+<li>重设vptr 指向适当的基类的虚函数表</li>
+<li>以声明相反的顺序调用基类的析构函数</li>
+<li>如果当前类是 most-derived class（最底层类），那么以构造的相反顺序调用虚基类的析构函数。</li>
+</ul>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/13/5-3-%E6%8B%B7%E8%B4%9D%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6%E8%AF%AD%E6%84%8F%E5%AD%A6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/13/5-3-%E6%8B%B7%E8%B4%9D%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6%E8%AF%AD%E6%84%8F%E5%AD%A6/" class="post-title-link" itemprop="url">5.3 拷贝赋值运算符语意学</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-03-13 03:11:21" itemprop="dateCreated datePublished" datetime="2022-03-13T03:11:21+08:00">2022-03-13</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-03-15 00:38:01" itemprop="dateModified" datetime="2022-03-15T00:38:01+08:00">2022-03-15</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>当我们设计了一个class，并以一个class object指定给另一个class object时，我们知道会调用拷贝赋值运算符，而对于这个拷贝赋值运算符我们有三种选择：</p>
+<ol>
+<li>让编译器隐式生成一个默认的拷贝赋值运算符，方法有<ul>
+<li>把拷贝赋值运算符声明为<code>=default</code>   (C++11 推荐做法)<ul>
+<li><code>类名&amp; operator=(const  类名&amp;)=default</code></li>
+</ul>
+</li>
+<li>不定义拷贝赋值运算符</li>
+</ul>
+</li>
+<li>程序员定义的显式拷贝赋值运算符</li>
+<li>明确拒绝复制操作，方法有：<ul>
+<li>把拷贝赋值运算符声明为<code>=delete</code>   (C++11 推荐做法)<ul>
+<li><code>类名&amp; operator=(const  类名&amp;)=delete</code></li>
+</ul>
+</li>
+<li>将*operator &#x3D;*声明为private, 并且不提供其定义 (C++ 11 之前的做法)</li>
+</ul>
+</li>
+</ol>
+<h2 id="编译器版本拷贝构造运算符语意"><a href="#编译器版本拷贝构造运算符语意" class="headerlink" title="编译器版本拷贝构造运算符语意"></a>编译器版本拷贝构造运算符语意</h2><p>编译器版的拷贝构造运算符和编译器版的拷贝构造函数语意类似，其行为是memberwise copy，即挨个拷贝数据成员。</p>
+<p>当memberwise copy表现出bitwise copy（挨个字节拷贝）的语意的时候，认为其是trivial （无用的），根本不会合成出来，当满足下面的条件时，就是trivial的：</p>
+<ul>
+<li>类没有虚函数.</li>
+<li>类没有虚基类.</li>
+<li>直接基类的复制赋值运算符都是trivial的.</li>
+<li>非静态成员的复制赋值运算符是trivial的.</li>
+</ul>
+<h3 id="虚继承的拷贝抑制"><a href="#虚继承的拷贝抑制" class="headerlink" title="虚继承的拷贝抑制"></a>虚继承的拷贝抑制</h3><p>不管是程序员自定义的，还是编译器合成的拷贝赋值运算符，都需要考虑一个问题：在如下继承体系下，当拷贝Vertex3d对象的时候，如何避免虚基类Point的拷贝赋值运算符多次调用。</p>
+<p><img src="/5-3-%E6%8B%B7%E8%B4%9D%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6%E8%AF%AD%E6%84%8F%E5%AD%A6.assets/20220313025931.png" alt="image-20220313025252490"></p>
+<p>与<code>5.2 构造函数语意学</code>里说到的在虚拟继承情况下虚基类被拷贝多次是一个意思，然而<strong>拷贝赋值运算符其实并没有特别好的办法避免多次拷贝虚基类</strong>。</p>
+<p>不过幸运的是：<strong>编译器合成版本和程序员自定义的拷贝赋值运算符并不会发生错误</strong>，<strong>拷贝赋值运算符不像构造函数一样，会被编译器默默加很多代码</strong>（比如调用基类的构造函数，设置vptr等等），<strong>所以虚基类被拷贝多次并不会带来错误，只有效率上的影响</strong>（构造函数需要避免多次构造虚基类的主要原因是因为：派生类会首先虚基类的构造函数，然后调用基类的构造函数，而基类的构造函数同样会调用虚基类的构造函数，如果这两次构造出来的虚基类不一致（比如传入不同的参数）就会发生错误）。</p>
+<h2 id="程序员定义的显式拷贝赋值运算符"><a href="#程序员定义的显式拷贝赋值运算符" class="headerlink" title="程序员定义的显式拷贝赋值运算符"></a>程序员定义的显式拷贝赋值运算符</h2><p>需要考虑是不是显式提供一个<em>operator &#x3D;</em>. 一个原则是:</p>
+<p>​    <strong>只有在默认复制赋值运算符的行为不安全或不正确时, 才需要显式定义复制赋值运算符</strong>.</p>
+<p>由于拷贝赋值运算符不像构造函数一样，会被编译器默默加很多代码，所以多次调用虚基类的拷贝赋值运算符不会带来错误，但是<strong>为了确保虚基类被正确的拷贝</strong>，我们可以把虚基类的拷贝赋值操作放在最后，调用方式：<code>类名::operator=(对象名)</code>，当然书中建议：<strong>不允许任何一个virtual base class的拷贝操作，或者更进一步地，不在任何virtual base class中声明数据</strong>。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/13/5-2-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E8%AF%AD%E6%84%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/13/5-2-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E8%AF%AD%E6%84%8F/" class="post-title-link" itemprop="url">5.2 构造函数语意</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-13 02:18:38 / 修改时间：03:08:59" itemprop="dateCreated datePublished" datetime="2022-03-13T02:18:38+08:00">2022-03-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="真实的构造函数做了哪些事情"><a href="#真实的构造函数做了哪些事情" class="headerlink" title="真实的构造函数做了哪些事情"></a>真实的构造函数做了哪些事情</h2><p>编译器会扩充每一个constructor，扩充程序视当前class T的继承体系而定，一般而言编译器所做的扩充操作大致如下：</p>
+<ol>
+<li><p>调用所有虚基类的构造函数，从左到右，从最深到最浅：</p>
+<ul>
+<li><p><strong>调用虚基类的构造函数的大前提是当前构造函数构造的类是最底层的（most-derived class），直观点说就是，虚基类的构造由最外层类控制。</strong></p>
+</li>
+<li><p>如果虚基类被列入初始化列表中，那么调用初始化列表中的相应构造函数，否则调用默认构造函数（如果默认构造函数是delete的话，报错）</p>
+</li>
+<li><p>此外，要保证虚基类的偏移量在执行期可存取</p>
+<ul>
+<li>对于使用指向虚基类的指针（vbptr）来实现虚基类的编译器来说就是对vbptr的初始化。</li>
+<li>如果是使用虚函数表保存偏移量那应该是推迟到虚表指针（vptr）的设定再进行（我猜的）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>调用所有基类构造函数，依声明顺序：</p>
+<ul>
+<li>如果该基类被列入了成员初始化队列，那么调用初始化列表中的相应构造函数，否则调用默认构造函数（如果默认构造函数是delete的话，报错）</li>
+<li>如果该基类是第二顺位或之后的基类，那么在调用该基类的构造函数时，this 指针参数必须被调整才能传递过去，需要是<code>派生类地址+偏移</code>。</li>
+</ul>
+</li>
+<li><p>正确初始化vptr</p>
+</li>
+<li><p>按照非静态数据成员的声明顺序，初始化所有非静态数据成员</p>
+<ul>
+<li>如果数据成员是内置类型<ul>
+<li>如果被列入成员初始化队列，那么根据初始化列表中的初始值进行初始化</li>
+<li>否则，实际不初始化，其值未知</li>
+</ul>
+</li>
+<li>如果数据成员是类类型<ul>
+<li>如果被列入成员初始化队列，那么调用初始化列表中的相应构造函数</li>
+<li>否则调用默认构造函数，如果默认构造函数是delete的话，报错</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>执行构造函数体</p>
+</li>
+</ol>
+<h2 id="虚继承的构造抑制"><a href="#虚继承的构造抑制" class="headerlink" title="虚继承的构造抑制"></a>虚继承的构造抑制</h2><p>调用虚基类的构造函数的大前提是当前构造函数构造的类是最底层的（most-derived class）。其目的是为了保证这个虚基类子对象只初始化了一次。</p>
+<p>否则考虑如下继承体系，</p>
+<p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220313025931.png" alt="image-20220313025252490"></p>
+<p>当我们定义<code>Vertex3d cv;</code>时，Vertex3d的构造函数中会调用Point的构造函数、而随之调用它的子对象，Point3d和Vertex的构造函数中也调用了Point的构造函数。</p>
+<p>先不说，对于同一个子对象进行三次初始化是否有效率，更重要的是，这将不可避免的带来错误。由Vertex3d指定的子对象Point的值，会被覆盖掉（Point3d和Vertex各自的构造函数可能调用Point不同的构造函数，或者传了不同的实参）</p>
+<p>根据c++ 语法，Point 的初始化应有most-derived class来施行。也就是说当Vertex3d为最底层的时候，应当由它的构造函数来调用Point的构造函数初始化Point子对象，Vertex3d的子对象的构造函数对于Point的调用则应当抑制。</p>
+<h3 id="如何抑制"><a href="#如何抑制" class="headerlink" title="如何抑制"></a>如何抑制</h3><p>有两种方法：</p>
+<ul>
+<li><p>给所有构造函数增加一个参数，一个bool值，用来表示是否为most-derived class，也就是判断当前构造函数所在类是否是继承体系的最底层. 各构造函数根据这个条件变量来决定是否调用虚基类的构造函数，因此通过控制这个条件变量，就可以抑制非most-derived class调用虚基类的构造函数。</p>
+<p>那么函数体中初始化虚基类的语句就是这样:</p>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(is_most_derived)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">this</span>-&gt;VirtualBase::<span class="built_in">VirtualBase</span>(param_list);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<p>​    不过, 按照此方法, 虚基类的每个子类都需要判断一次, 降低了程序效率. 而实际上在编译时我们就知道子对象的构造函数不需要执行此操作.</p>
+<ul>
+<li>所以另外一种方法，是提供两种构造函数, 一种针对完整的object，一种针对subobject，完整的无脑上虚基类构造函数，并且调用基类的subobject版本构造函数，不执行虚基类构造函数。</li>
+</ul>
+<p>为了实现虚继承的构造抑制，因此<strong>对虚基类的初始化不能放在函数体中, 必须放在初始化列表中.</strong></p>
+<h3 id="在构造函数中调用虚函数"><a href="#在构造函数中调用虚函数" class="headerlink" title="在构造函数中调用虚函数"></a>在构造函数中调用虚函数</h3><p><strong>调用的实际函数版本就是函数调用点所在构造函数的类类型实现的版本.</strong></p>
+<p>原因就是<strong>对象的vptr初始化时机是在调用基类构造函数之后, 成员初始化语句之前</strong>. 所以, 在构造函数的数据成员初始化语句和函数体内调用成员函数时, 对象vptr刚刚被设置为构造函数所属类对应的vptr，自然调用的也是所属类版本。</p>
+<p>析构函数同理。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/03/13/5-1-%E8%81%9A%E5%90%88%E7%B1%BB/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/03/13/5-1-%E8%81%9A%E5%90%88%E7%B1%BB/" class="post-title-link" itemprop="url">5.1 聚合类</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-03-13 02:13:25 / 修改时间：02:15:01" itemprop="dateCreated datePublished" datetime="2022-03-13T02:13:25+08:00">2022-03-13</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%B7%B1%E5%BA%A6%E6%8E%A2%E7%B4%A2C-%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%9E%8B/" itemprop="url" rel="index"><span itemprop="name">深度探索C++对象模型</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220313021357.png" alt="image-20220313021356483"></p>
+<p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220313021438.png" alt="image-20220313021436891"></p>
 
       
     </div>
@@ -1328,7 +1203,7 @@ const int Pi = 3.14;
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1394,14 +1269,14 @@ const int Pi = 3.14;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">23</span>
+          <span class="site-state-item-count">35</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
