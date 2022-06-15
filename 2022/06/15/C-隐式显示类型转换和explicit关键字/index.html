@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.0.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yanleiwang.github.io","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="隐式类型转换隐式类型转换：自动执行的类型转换（从一种给定类型转换为另一种相关类型） 发生隐式类型转换的情况：  在大多数表达式中，比int类型小的整型值首先提升为int类型 在条件中，非布尔值转换成布尔类型 初始化过中，初始值转换成变量的类型 在赋值语句中，右侧运算对象转换成左侧运算对象的类型 函数调用时  隐式转换的种类:  数组转换成指针： 在大多数用到数组的表达式中，数组会自动转换成指向数组">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 隐式&#x2F;显示类型转换和explicit关键字">
+<meta property="og:url" content="https://yanleiwang.github.io/2022/06/15/C-%E9%9A%90%E5%BC%8F%E6%98%BE%E7%A4%BA%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8Cexplicit%E5%85%B3%E9%94%AE%E5%AD%97/index.html">
+<meta property="og:site_name" content="Love WL Forever">
+<meta property="og:description" content="隐式类型转换隐式类型转换：自动执行的类型转换（从一种给定类型转换为另一种相关类型） 发生隐式类型转换的情况：  在大多数表达式中，比int类型小的整型值首先提升为int类型 在条件中，非布尔值转换成布尔类型 初始化过中，初始值转换成变量的类型 在赋值语句中，右侧运算对象转换成左侧运算对象的类型 函数调用时  隐式转换的种类:  数组转换成指针： 在大多数用到数组的表达式中，数组会自动转换成指向数组">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-06-15T14:58:38.000Z">
+<meta property="article:modified_time" content="2022-06-15T16:47:13.885Z">
+<meta property="article:author" content="wyl">
+<meta property="article:tag" content="C&#x2F;C++">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://yanleiwang.github.io/2022/06/15/C-%E9%9A%90%E5%BC%8F%E6%98%BE%E7%A4%BA%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8Cexplicit%E5%85%B3%E9%94%AE%E5%AD%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>C++ 隐式/显示类型转换和explicit关键字 | Love WL Forever</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Love WL Forever</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://yanleiwang.github.io/2022/06/15/C-%E9%9A%90%E5%BC%8F%E6%98%BE%E7%A4%BA%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E5%92%8Cexplicit%E5%85%B3%E9%94%AE%E5%AD%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="wyl">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Love WL Forever">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          C++ 隐式/显示类型转换和explicit关键字
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-15 22:58:38" itemprop="dateCreated datePublished" datetime="2022-06-15T22:58:38+08:00">2022-06-15</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-16 00:47:13" itemprop="dateModified" datetime="2022-06-16T00:47:13+08:00">2022-06-16</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C-C-%E5%9F%BA%E7%A1%80/" itemprop="url" rel="index"><span itemprop="name">C/C++基础</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="隐式类型转换"><a href="#隐式类型转换" class="headerlink" title="隐式类型转换"></a>隐式类型转换</h1><p>隐式类型转换：自动执行的类型转换（从一种给定类型转换为另一种相关类型）</p>
+<p>发生隐式类型转换的情况：</p>
+<ul>
+<li>在大多数表达式中，比int类型小的整型值首先提升为int类型</li>
+<li>在条件中，非布尔值转换成布尔类型</li>
+<li>初始化过中，初始值转换成变量的类型</li>
+<li>在赋值语句中，右侧运算对象转换成左侧运算对象的类型</li>
+<li>函数调用时</li>
+</ul>
+<p>隐式转换的种类:</p>
+<ul>
+<li><p>数组转换成指针： 在大多数用到数组的表达式中，数组会自动转换成指向数组首元素的指针</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> arry[<span class="number">10</span>];</span><br><span class="line"><span class="type">int</span> *ptr = arry; <span class="comment">// arry转换成指向数组首元素的指针</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>指针的转换：</p>
+<ul>
+<li>0， nullptr能转换成任意指针类型</li>
+<li>指向任意非常量的指针能转换成void* （反之，比如void * 转成int* 需要static_cast&lt;int*&gt;）</li>
+<li>指向任意对象的指针能转换成const void*</li>
+<li><strong>可以把指向子类的指针转换成指向父类的指针，引用也是如此（但是只有public继承才可，其他不行）</strong></li>
+</ul>
+</li>
+<li><p>转换成布尔类型：</p>
+<ul>
+<li>存在一种从算术类型或指针类型向布尔类型自动转换的机制</li>
+<li>如果指针或算术类型的值为0，则转换结果是false；否则为true</li>
+</ul>
+</li>
+<li><p>允许将指向非常量类型的指针转换成指向相应的常量类型的指针，对引用也是如此</p>
+</li>
+<li><p>类类型的隐式转换</p>
+<ul>
+<li><p>定义了转换构造函数（只有一个参数的构造函数）或者定义了类型转换运算符，就可以执行从一个类隐式转换到另一个类。</p>
+</li>
+<li><p><strong>只能执行一次类类型的转换</strong>，但在这次转换之前or之后可以执行多次以上的转换</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="算术转换"><a href="#算术转换" class="headerlink" title="算术转换"></a>算术转换</h2><p>在算术类型参与的表达式中：</p>
+<ul>
+<li><p>首先，比int类型小的整型值首先提升为int类型</p>
+</li>
+<li><p>之后如果两个运算对象的类型还是不一致，则小类型的运算对象会转换成较大的类型（可能就发生有符号类型转换成无符号类型了！！！）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">float</span> fval = <span class="number">3.12</span>;</span><br><span class="line"><span class="type">char</span> cval = <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line">fval + cval; <span class="comment">// cval先提升为int，然后再转为float</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="类类型转换"><a href="#类类型转换" class="headerlink" title="类类型转换"></a>类类型转换</h2><ul>
+<li>定义了转换构造函数（只有一个参数的构造函数）或者定义了类型转换运算符，就可以执行从一个类隐式转换到另一个类。</li>
+<li><strong>只能执行一次类类型的转换</strong>，但在这次转换之前or之后可以执行多次以上的转换</li>
+</ul>
+<h3 id="转换构造函数"><a href="#转换构造函数" class="headerlink" title="转换构造函数"></a>转换构造函数</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Small_int</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    </span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">      只有一个参数的构造函数就定义了从参数类型到类类型的隐式类型转换(从int转到small_int)</span></span><br><span class="line"><span class="comment">      可以用explicit 关键词禁止: explicit Small_int(int i):val(i) &#123;&#125;</span></span><br><span class="line"><span class="comment">	*/</span></span><br><span class="line">	<span class="built_in">Small_int</span>(<span class="type">int</span> i):<span class="built_in">val</span>(i) &#123;&#125; 	</span><br><span class="line">	<span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Small_int si&#123;<span class="number">10</span>&#125;;</span><br><span class="line">si = <span class="number">3</span>; <span class="comment">// 调用了从int到small_int的隐式类型转换，然后调用了合成的拷贝赋值运算符</span></span><br><span class="line"><span class="comment">/* </span></span><br><span class="line"><span class="comment">	用explicit 禁止后，需要</span></span><br><span class="line"><span class="comment">	si = static_cast&lt;Small_int&gt;(3);</span></span><br><span class="line"><span class="comment">	或者</span></span><br><span class="line"><span class="comment">	si = Small_int(3);</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="类型转换运算符"><a href="#类型转换运算符" class="headerlink" title="类型转换运算符"></a>类型转换运算符</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 形式： operator type() const; </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Small_int</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    </span><br><span class="line">	<span class="comment">/* </span></span><br><span class="line"><span class="comment">	形式： operator type() const;   </span></span><br><span class="line"><span class="comment">	定义了从类类型到type的隐式类型转换(从small_int转到int)</span></span><br><span class="line"><span class="comment">    operator int 其实就是它的函数名</span></span><br><span class="line"><span class="comment">   可以用explicit 关键词禁止: explicit operator int() const &#123;return val;&#125;</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">	<span class="function"><span class="keyword">operator</span> <span class="title">int</span><span class="params">()</span> <span class="type">const</span> </span>&#123;<span class="keyword">return</span> val;&#125;	</span><br><span class="line">	<span class="type">int</span> val = <span class="number">5</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">SmallInt si;</span><br><span class="line">si + <span class="number">3</span>; <span class="comment">// si 隐式转换成int</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 当使用explicit关键字后，需要使用static_cast 显示地请求类型转换</span></span><br><span class="line"><span class="built_in">static_cast</span>&lt;<span class="type">int</span>&gt;(si) + <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+
+<h1 id="explicit"><a href="#explicit" class="headerlink" title="explicit"></a>explicit</h1><p>explicit关键字可以抑制隐式的类类型转换（当定义只有一个参数的构造函数或者类型转换运算符的时候）。推荐定义上述两种函数的时候必须加explicit。</p>
+<h1 id="子类到基类的转换"><a href="#子类到基类的转换" class="headerlink" title="子类到基类的转换"></a>子类到基类的转换</h1><p>用子类初始化或赋值一个基类的时候，实际上是在调用某个构造函数或者赋值运算符函数，只不过因为函数的参数是基类的引用，所以这里发生了子类的引用到基类的引用这样的隐式转换。</p>
+<p>实际上并没有子类到基类的隐式转换，只有子类的引用（指针）到基类的引用（指针）这样的隐式转换， 所以如果并没有定义相应的构造函数或赋值运算符函数，那么子类到基类的转换，编译器就会报错。</p>
+<h1 id="显式转换"><a href="#显式转换" class="headerlink" title="显式转换"></a>显式转换</h1><ul>
+<li><p>转型语法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// C风格的转型动作</span></span><br><span class="line">(T)expression; <span class="comment">// 将expression转型为T</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 函数风格的转型动作</span></span><br><span class="line"><span class="built_in">T</span>(expression); <span class="comment">// 将expression转型为T</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// C++还提供四种新式转型</span></span><br><span class="line"><span class="built_in">const_cast</span>&lt;T&gt;(expression);</span><br><span class="line"><span class="built_in">dynamic_cast</span>&lt;T&gt;(expression);</span><br><span class="line"><span class="built_in">reinterpret_cast</span>&lt;T&gt;(expression);</span><br><span class="line"><span class="built_in">static_cast</span>&lt;T&gt;(expression);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>const_cast：</p>
+<ul>
+<li>能够把常量对象转为非常量，也只有它拥有该能力</li>
+</ul>
+</li>
+<li><p>dynamic_cast：</p>
+<ul>
+<li>主要用来执行“安全向下转型”，也就是把基类指针转为派生类指针。它是唯一一个无法由旧式语句转换的新类型转换，也是唯一一个可能耗费大量运行成本的转型操作。</li>
+<li>绝对必须避免的是连锁式使用dynamic_cast，其运行效率极低且缺乏维护性。这种程序总应该被某种基于virtual函数调用的方法取而代之。</li>
+</ul>
+</li>
+<li><p>reinterpret_cast：</p>
+<ul>
+<li><p>把一个整型转为指针类型，反之亦然。</p>
+</li>
+<li><p>转换一个指针类型</p>
+<ul>
+<li>&#96;&#96;&#96;c++<br>int *ip;<br>char *pc &#x3D; reinterpret_cast&lt;char*&gt;(ip)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  + 不可移植，慎用（俺也不懂, 用来转换一个指针的时候，还是会用的）</span><br><span class="line"></span><br><span class="line">+ static_cast：</span><br><span class="line"></span><br><span class="line">  + 强迫隐式转换，比如把non-const转为const，int转为double，把派生类指针转为基类指针</span><br><span class="line">  + 把void*指针转为指向某类型的指针。（指向任意非常量的指针转换成void * 是隐式转换 ）</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">+ 如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_casts。如果有个设计需要转型动作，试着发展无需转型的替代设计</span><br><span class="line"></span><br><span class="line">+ 如果转型是必要的，试着将它隐藏于某个函数背后。客户可以调用该函数，而不需要将转型放进他们自己的代码内</span><br><span class="line"></span><br><span class="line">+ 宁可以C++-style转型，不要使用旧式转型。前者易于辨识，转型动作明确。</span><br><span class="line"></span><br><span class="line">+ 转型往往令编译器增加一些代码，并不是什么都不做。</span><br><span class="line"></span><br><span class="line">  + 有人认为转型只不过告诉编译器把某种类型视为另一种类型，其他什么都没做，实际上这是不可能的。比如将int转为double的时候编译器肯定生成了一些代码，因为int的底层描述与double的底层描述并不相同。</span><br><span class="line"></span><br><span class="line">+ 何时采用旧式转型</span><br><span class="line"></span><br><span class="line">  + 一般来说，仅在需要调用一个explicit构造函数将一个对象传递给一个函数时使用旧式转型：</span><br><span class="line"></span><br><span class="line">  ```c++</span><br><span class="line">  class Widget&#123;</span><br><span class="line">  public:</span><br><span class="line">      explicit Widget(int size);</span><br><span class="line">      ...</span><br><span class="line">  &#125;;</span><br><span class="line">  void doSth(const Widget&amp; w);</span><br><span class="line">  </span><br><span class="line">  // 两者等价</span><br><span class="line">  doSth(Widget(15)); // 使用 Widget(int size) 构造了一个临时对象</span><br><span class="line">  doSth(static_cast&lt;Widget&gt;(15)); // 使用 Widget(int size) 构造了一个临时对象</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p>然而这种风格其实是一种构造</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/C-C/" rel="tag"># C/C++</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/06/15/%E6%AF%8F%E6%97%A5%E5%BE%85%E5%8A%9E/" rel="prev" title="每日待办">
+      <i class="fa fa-chevron-left"></i> 每日待办
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9A%90%E5%BC%8F%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="nav-number">1.</span> <span class="nav-text">隐式类型转换</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%97%E6%9C%AF%E8%BD%AC%E6%8D%A2"><span class="nav-number">1.1.</span> <span class="nav-text">算术转换</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="nav-number">1.2.</span> <span class="nav-text">类类型转换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BD%AC%E6%8D%A2%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">1.2.1.</span> <span class="nav-text">转换构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E8%BF%90%E7%AE%97%E7%AC%A6"><span class="nav-number">1.2.2.</span> <span class="nav-text">类型转换运算符</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#explicit"><span class="nav-number">2.</span> <span class="nav-text">explicit</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AD%90%E7%B1%BB%E5%88%B0%E5%9F%BA%E7%B1%BB%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="nav-number">3.</span> <span class="nav-text">子类到基类的转换</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%98%BE%E5%BC%8F%E8%BD%AC%E6%8D%A2"><span class="nav-number">4.</span> <span class="nav-text">显式转换</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">wyl</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wyl</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
