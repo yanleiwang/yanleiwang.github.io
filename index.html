@@ -214,7 +214,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-06-16 00:47:13" itemprop="dateModified" datetime="2022-06-16T00:47:13+08:00">2022-06-16</time>
+                <time title="修改时间：2022-06-16 01:15:38" itemprop="dateModified" datetime="2022-06-16T01:15:38+08:00">2022-06-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -313,11 +313,35 @@
 <li><p>把一个整型转为指针类型，反之亦然。</p>
 </li>
 <li><p>转换一个指针类型</p>
-<ul>
-<li>&#96;&#96;&#96;c++<br>int *ip;<br>char *pc &#x3D; reinterpret_cast&lt;char*&gt;(ip)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">  + 不可移植，慎用（俺也不懂, 用来转换一个指针的时候，还是会用的）</span><br><span class="line"></span><br><span class="line">+ static_cast：</span><br><span class="line"></span><br><span class="line">  + 强迫隐式转换，比如把non-const转为const，int转为double，把派生类指针转为基类指针</span><br><span class="line">  + 把void*指针转为指向某类型的指针。（指向任意非常量的指针转换成void * 是隐式转换 ）</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">+ 如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_casts。如果有个设计需要转型动作，试着发展无需转型的替代设计</span><br><span class="line"></span><br><span class="line">+ 如果转型是必要的，试着将它隐藏于某个函数背后。客户可以调用该函数，而不需要将转型放进他们自己的代码内</span><br><span class="line"></span><br><span class="line">+ 宁可以C++-style转型，不要使用旧式转型。前者易于辨识，转型动作明确。</span><br><span class="line"></span><br><span class="line">+ 转型往往令编译器增加一些代码，并不是什么都不做。</span><br><span class="line"></span><br><span class="line">  + 有人认为转型只不过告诉编译器把某种类型视为另一种类型，其他什么都没做，实际上这是不可能的。比如将int转为double的时候编译器肯定生成了一些代码，因为int的底层描述与double的底层描述并不相同。</span><br><span class="line"></span><br><span class="line">+ 何时采用旧式转型</span><br><span class="line"></span><br><span class="line">  + 一般来说，仅在需要调用一个explicit构造函数将一个对象传递给一个函数时使用旧式转型：</span><br><span class="line"></span><br><span class="line">  ```c++</span><br><span class="line">  class Widget&#123;</span><br><span class="line">  public:</span><br><span class="line">      explicit Widget(int size);</span><br><span class="line">      ...</span><br><span class="line">  &#125;;</span><br><span class="line">  void doSth(const Widget&amp; w);</span><br><span class="line">  </span><br><span class="line">  // 两者等价</span><br><span class="line">  doSth(Widget(15)); // 使用 Widget(int size) 构造了一个临时对象</span><br><span class="line">  doSth(static_cast&lt;Widget&gt;(15)); // 使用 Widget(int size) 构造了一个临时对象</span><br></pre></td></tr></table></figure></li>
-</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> *ip;</span><br><span class="line"><span class="type">char</span> *pc = <span class="built_in">reinterpret_cast</span>&lt;<span class="type">char</span>*&gt;(ip)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>不可移植，慎用（俺也不懂, 用来转换一个指针的时候，还是会用的）</p>
 </li>
 </ul>
+</li>
+<li><p>static_cast：</p>
+<ul>
+<li>强迫隐式转换，比如把non-const转为const，int转为double，把派生类指针转为基类指针</li>
+<li>把void*指针转为指向某类型的指针。（指向任意非常量的指针转换成void * 是隐式转换 ）</li>
+</ul>
+</li>
+<li><p>如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_casts。如果有个设计需要转型动作，试着发展无需转型的替代设计</p>
+</li>
+<li><p>如果转型是必要的，试着将它隐藏于某个函数背后。客户可以调用该函数，而不需要将转型放进他们自己的代码内</p>
+</li>
+<li><p>宁可以C++-style转型，不要使用旧式转型。前者易于辨识，转型动作明确。</p>
+</li>
+<li><p>转型往往令编译器增加一些代码，并不是什么都不做。</p>
+<ul>
+<li>有人认为转型只不过告诉编译器把某种类型视为另一种类型，其他什么都没做，实际上这是不可能的。比如将int转为double的时候编译器肯定生成了一些代码，因为int的底层描述与double的底层描述并不相同。</li>
+</ul>
+</li>
+<li><p>何时采用旧式转型</p>
+<ul>
+<li>一般来说，仅在需要调用一个explicit构造函数将一个对象传递给一个函数时使用旧式转型：</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Widget</span><span class="params">(<span class="type">int</span> size)</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">doSth</span><span class="params">(<span class="type">const</span> Widget&amp; w)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 两者等价</span></span><br><span class="line"><span class="built_in">doSth</span>(<span class="built_in">Widget</span>(<span class="number">15</span>)); <span class="comment">// 使用 Widget(int size) 构造了一个临时对象</span></span><br><span class="line"><span class="built_in">doSth</span>(<span class="built_in">static_cast</span>&lt;Widget&gt;(<span class="number">15</span>)); <span class="comment">// 使用 Widget(int size) 构造了一个临时对象</span></span><br></pre></td></tr></table></figure>
+
 <p>然而这种风格其实是一种构造</p>
 </li>
 </ul>

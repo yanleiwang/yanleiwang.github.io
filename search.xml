@@ -1,76 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>2.1 默认构造函数的构造操作</title>
-    <url>/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/</url>
-    <content><![CDATA[<h2 id="什么时候默认构造函数是delete的？"><a href="#什么时候默认构造函数是delete的？" class="headerlink" title="什么时候默认构造函数是delete的？"></a>什么时候默认构造函数是delete的？</h2><p>当一个类，没有定义构造函数的时候，我们知道编译器会给你合成一个默认构造函数，但当有以下情况的时候，编译器并不会为你合成一个，也就是定义为删除：</p>
-<ul>
-<li>类的某个数据类成员，它的析构函数是删除或者无法访问的（access level）</li>
-<li>类的某个数据类成员无法默认构造的时候<ul>
-<li>它就是无法默认构造，比如有个其他的构造函数了，却没定义默认构造函数.</li>
-<li>它是个引用，那么它必须得显式初始化，然后又没给它类内初始值</li>
-<li>它是个const，且没有类内初始值,  但是没有显式的默认构造函数.（const 对象必须要初始化，但是一个有显式的默认构造函数的const 也是ok的， 比如 const string s1； 不会报错. 它可能会有一个编译器合成的默认构造函数，但是对于const 对象来说，不顶事）</li>
-</ul>
-</li>
-<li>以上数据类成员包括基类</li>
-</ul>
-<h2 id="默认构造函数会干什么事？"><a href="#默认构造函数会干什么事？" class="headerlink" title="默认构造函数会干什么事？"></a>默认构造函数会干什么事？</h2><p>编译器合成版本的默认构造函数会按以下顺序执行：</p>
-<ol>
-<li>调用虚基类构造函数（假如有虚基类）</li>
-<li>调用所有基类的构造函数，以基类的声明顺序为顺序（假如有基类）</li>
-<li>设定虚表指针的值，指向相应虚函数表。（假如有虚函数）</li>
-<li>调用所有数据成员的构造函数，以声明顺序为顺序（假如有类类型的数据成员）</li>
-</ol>
-<p><strong>补充：</strong></p>
-<ul>
-<li><p>其中1、2、4，假如初始化列表显示提供了参数，会被传递过去，调用相应构造函数，否则调用默认构造函数。</p>
-</li>
-<li><p><strong>自己定义的所有构造函数，在执行函数体之前，也会被编译器执行1-4的内容, 也就是步骤5才是执行函数体。</strong></p>
-</li>
-<li><p>对于步骤4，内置类型的，比如整型、浮点型、字符型、指针、内置类型数组等都不会被编译器初始化，这些是程序员需要要干的事情。</p>
-</li>
-<li><p>只有在1,2,3,4至少存在一个步骤的时候，编译器才会为你实际合成一个默认构造函数，否则是不会被合成的, 也就是所谓的trivial construction（无用的构造函数）。 </p>
-</li>
-<li><p>假如一个类没有默认构造函数，编译器也不给你合（也就是被定义为删除的），你又默认初始化了一个这个类的对象，那就gg，编译器报错。并且下面这段代码也会报错：</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">test</span>(<span class="type">int</span> _a):<span class="built_in">a</span>(_a)&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    test a;</span><br><span class="line">    <span class="type">int</span> b;</span><br><span class="line">    <span class="built_in">test1</span>(<span class="type">int</span> i):<span class="built_in">b</span>(i)&#123;&#125;  <span class="comment">// 因为test1的构造函数test1（int i）体内实际会调用test的默认构造函数（编译器帮你干的），但是test又没有默认构造函数，所以gg</span></span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">test1 <span class="title">ab</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-</ul>
-<h2 id="杂"><a href="#杂" class="headerlink" title="杂"></a>杂</h2><ul>
-<li>内存的global区在程序的一开始会被清0，而local和heap区不会清0，所以这两个区域内存里的值是上一次的遗留物，也就是未知的值。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>2.3.1 传值参数是如何实现的</title>
-    <url>/2022/02/23/2-3-1-%E4%BC%A0%E5%80%BC%E5%8F%82%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84/</url>
-    <content><![CDATA[<p>考虑如下代码：</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(X x0)</span></span>;</span><br><span class="line">X xx;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="built_in">foo</span>(xx);</span><br></pre></td></tr></table></figure>
-
-<p>那么传值参数是如何实现的？</p>
-<p>在编译器一种实现步骤如下：</p>
-<ul>
-<li>构建临时对象tmp，并调用copy constructor将它初始化</li>
-<li>将函数参数修改为左值引用类型</li>
-<li>临时对象转交函数</li>
-<li>函数调用结束后，析构该临时对象</li>
-</ul>
-<p>即，如下代码</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">X xx;</span><br><span class="line"><span class="function">X <span class="title">tmp</span><span class="params">(xx)</span></span>;</span><br><span class="line"><span class="built_in">foo</span>(tmp);</span><br><span class="line">tmp.~<span class="built_in">X</span>();</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>1 关于对象</title>
     <url>/2022/02/22/1-%E5%85%B3%E4%BA%8E%E5%AF%B9%E8%B1%A1/</url>
     <content><![CDATA[<h2 id="加入封装后的成本"><a href="#加入封装后的成本" class="headerlink" title="加入封装后的成本"></a>加入封装后的成本</h2><p>在C语言中，“数据”及“处理数据的操作”是分开声明的，这种处理方式被称为procedural（面向过程）。</p>
@@ -147,35 +77,67 @@
       </tags>
   </entry>
   <entry>
-    <title>2.2 拷贝构造函数的构造操作</title>
-    <url>/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/</url>
-    <content><![CDATA[<h2 id="什么情况会调用copy构造函数"><a href="#什么情况会调用copy构造函数" class="headerlink" title="什么情况会调用copy构造函数?"></a>什么情况会调用copy构造函数?</h2><ul>
-<li>用一个对象作为参数初始化另一个对象时.</li>
-<li>传值的方式调用一个函数时. </li>
-<li>传值的方式从函数返回一个值时. (不考虑返回值优化)</li>
-</ul>
-<h2 id="编译器合成的拷贝构造函数机制"><a href="#编译器合成的拷贝构造函数机制" class="headerlink" title="编译器合成的拷贝构造函数机制"></a>编译器合成的拷贝构造函数机制</h2><p> 如果不显式定义拷贝构造函数或者 <code>A(const &amp;A rhs) = default</code>， 编译器会生成一个合成的拷贝构造函数，除了一种特殊情况：</p>
-<ul>
-<li>当类的数据类成员析构函数（拷贝构造函数）是删除的或不可访问的，这个类的copy构造函数是delete的。</li>
-</ul>
-<p>合成的拷贝构造函数其整体思路是用 default memberwise initialization 实现的，具体点就是以一个个member的搞，对于内置类型的（int，指针，数组）是以bitwise copy（位逐次拷贝，就是一个个位复制）实现的，而对于类类型，则是递归的调用的memberwise initialization实现的。</p>
-<p>比如，如下Word类</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Word</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">     ...<span class="comment">//不存在explicit copy constructor</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> _occurs;</span><br><span class="line">    String _word;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+    <title>2.3.1 传值参数是如何实现的</title>
+    <url>/2022/02/23/2-3-1-%E4%BC%A0%E5%80%BC%E5%8F%82%E6%95%B0%E6%98%AF%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E7%9A%84/</url>
+    <content><![CDATA[<p>考虑如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(X x0)</span></span>;</span><br><span class="line">X xx;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="built_in">foo</span>(xx);</span><br></pre></td></tr></table></figure>
 
-<p>一个Word对象的编译器合成拷贝构造函数会拷贝其内置类型的 _occurs，然后对String member执行递归式memberwise initialization。</p>
-<p>类似于默认构造函数，C++亦把拷贝构造函数区分为trivial（无用）与non-trivial（有用）两种，只有non-trivial的实体才会被合成于程序之中。</p>
-<p>trivial 拷贝构造函数，其实就是bitwise copy，把被拷贝对象的内存空间原样拷贝过来，并不调用copy构造函数, 可能的实现方式如利用memcpy等, 因此效率高, 复制出的对象和原对象完全相同.</p>
-<h3 id="什么时候是有用拷贝构造函数？"><a href="#什么时候是有用拷贝构造函数？" class="headerlink" title="什么时候是有用拷贝构造函数？"></a>什么时候是有用拷贝构造函数？</h3><p>当合成拷贝构造函数不能表现为按位逐次拷贝语义的时候。</p>
+<p>那么传值参数是如何实现的？</p>
+<p>在编译器一种实现步骤如下：</p>
+<ul>
+<li>构建临时对象tmp，并调用copy constructor将它初始化</li>
+<li>将函数参数修改为左值引用类型</li>
+<li>临时对象转交函数</li>
+<li>函数调用结束后，析构该临时对象</li>
+</ul>
+<p>即，如下代码</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">X xx;</span><br><span class="line"><span class="function">X <span class="title">tmp</span><span class="params">(xx)</span></span>;</span><br><span class="line"><span class="built_in">foo</span>(tmp);</span><br><span class="line">tmp.~<span class="built_in">X</span>();</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>2.1 默认构造函数的构造操作</title>
+    <url>/2022/02/22/2-1-%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/</url>
+    <content><![CDATA[<h2 id="什么时候默认构造函数是delete的？"><a href="#什么时候默认构造函数是delete的？" class="headerlink" title="什么时候默认构造函数是delete的？"></a>什么时候默认构造函数是delete的？</h2><p>当一个类，没有定义构造函数的时候，我们知道编译器会给你合成一个默认构造函数，但当有以下情况的时候，编译器并不会为你合成一个，也就是定义为删除：</p>
+<ul>
+<li>类的某个数据类成员，它的析构函数是删除或者无法访问的（access level）</li>
+<li>类的某个数据类成员无法默认构造的时候<ul>
+<li>它就是无法默认构造，比如有个其他的构造函数了，却没定义默认构造函数.</li>
+<li>它是个引用，那么它必须得显式初始化，然后又没给它类内初始值</li>
+<li>它是个const，且没有类内初始值,  但是没有显式的默认构造函数.（const 对象必须要初始化，但是一个有显式的默认构造函数的const 也是ok的， 比如 const string s1； 不会报错. 它可能会有一个编译器合成的默认构造函数，但是对于const 对象来说，不顶事）</li>
+</ul>
+</li>
+<li>以上数据类成员包括基类</li>
+</ul>
+<h2 id="默认构造函数会干什么事？"><a href="#默认构造函数会干什么事？" class="headerlink" title="默认构造函数会干什么事？"></a>默认构造函数会干什么事？</h2><p>编译器合成版本的默认构造函数会按以下顺序执行：</p>
 <ol>
-<li>当类含有类对象成员（有一个即可，不用要求全部）, 且这个成员有有用的copy构造函数或者是显式定义的</li>
-<li>当类继承自一个基类, 并且基类有有用的copy构造函数或者是显式定义的copy构造函数</li>
-<li>当类含有虚函数时</li>
-<li>当类有虚基类时.</li>
+<li>调用虚基类构造函数（假如有虚基类）</li>
+<li>调用所有基类的构造函数，以基类的声明顺序为顺序（假如有基类）</li>
+<li>设定虚表指针的值，指向相应虚函数表。（假如有虚函数）</li>
+<li>调用所有数据成员的构造函数，以声明顺序为顺序（假如有类类型的数据成员）</li>
 </ol>
-<p>对于1和2, 由于copy对象时, 要copy数据成员和基类, 既然它们提供了copy构造函数, 就可以认为需要在它们的copy构造函数中进行某些bitwise copy无法实现的操作, 因此不能采用bitwise copy.</p>
-<p>对于3,  由于含有虚函数, 所以需要初始化对象的vptr, 而vptr的值不一定等于被拷贝对象的vptr值, 因为我们可以用子类对象初始化父类对象， 此时子类对象的vptr指向的子类的虚函数表，与父类的不同，所以bitwise不能满足需求.</p>
-<p>对于4, 由于含有虚基类, 情况同上，可以用子类对象初始化父类对象，子类对象和父类对象的内存布局不同。</p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>一个编译器合成的copy构造函数，大部分情况下是bitwise copy，但是当我们有个类对象成员，它的copy构造函数不是bitwise copy的时候，（类对象成员包括基类），或者当类有虚函数，虚基类的时候，不能对虚函数指针和虚基类指针简单粗暴的bitwise copy，这时候会对那些刺头进行 不是bitwise copy， 具体做法是调用  类对象成员的 “有用” copy构造函数 对虚函数指针和虚基类指针进行显式设定。</p>
+<p><strong>补充：</strong></p>
+<ul>
+<li><p>其中1、2、4，假如初始化列表显示提供了参数，会被传递过去，调用相应构造函数，否则调用默认构造函数。</p>
+</li>
+<li><p><strong>自己定义的所有构造函数，在执行函数体之前，也会被编译器执行1-4的内容, 也就是步骤5才是执行函数体。</strong></p>
+</li>
+<li><p>对于步骤4，内置类型的，比如整型、浮点型、字符型、指针、内置类型数组等都不会被编译器初始化，这些是程序员需要要干的事情。</p>
+</li>
+<li><p>只有在1,2,3,4至少存在一个步骤的时候，编译器才会为你实际合成一个默认构造函数，否则是不会被合成的, 也就是所谓的trivial construction（无用的构造函数）。 </p>
+</li>
+<li><p>假如一个类没有默认构造函数，编译器也不给你合（也就是被定义为删除的），你又默认初始化了一个这个类的对象，那就gg，编译器报错。并且下面这段代码也会报错：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">test</span>(<span class="type">int</span> _a):<span class="built_in">a</span>(_a)&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> a;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">test1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    test a;</span><br><span class="line">    <span class="type">int</span> b;</span><br><span class="line">    <span class="built_in">test1</span>(<span class="type">int</span> i):<span class="built_in">b</span>(i)&#123;&#125;  <span class="comment">// 因为test1的构造函数test1（int i）体内实际会调用test的默认构造函数（编译器帮你干的），但是test又没有默认构造函数，所以gg</span></span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">test1 <span class="title">ab</span><span class="params">(<span class="number">1</span>)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="杂"><a href="#杂" class="headerlink" title="杂"></a>杂</h2><ul>
+<li>内存的global区在程序的一开始会被清0，而local和heap区不会清0，所以这两个区域内存里的值是上一次的遗留物，也就是未知的值。</li>
+</ul>
 ]]></content>
       <categories>
         <category>深度探索C++对象模型</category>
@@ -211,6 +173,44 @@
 <li><p>早期C++， NRV优化和拷贝构造函数是有关系的，只有定义了拷贝构造函数才会开启NRV优化，但现代编译器NRV优化的开启一般都与拷贝构造函数没有关系。</p>
 </li>
 </ul>
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>2.2 拷贝构造函数的构造操作</title>
+    <url>/2022/02/22/2-2-%E6%8B%B7%E8%B4%9D%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%9E%84%E9%80%A0%E6%93%8D%E4%BD%9C/</url>
+    <content><![CDATA[<h2 id="什么情况会调用copy构造函数"><a href="#什么情况会调用copy构造函数" class="headerlink" title="什么情况会调用copy构造函数?"></a>什么情况会调用copy构造函数?</h2><ul>
+<li>用一个对象作为参数初始化另一个对象时.</li>
+<li>传值的方式调用一个函数时. </li>
+<li>传值的方式从函数返回一个值时. (不考虑返回值优化)</li>
+</ul>
+<h2 id="编译器合成的拷贝构造函数机制"><a href="#编译器合成的拷贝构造函数机制" class="headerlink" title="编译器合成的拷贝构造函数机制"></a>编译器合成的拷贝构造函数机制</h2><p> 如果不显式定义拷贝构造函数或者 <code>A(const &amp;A rhs) = default</code>， 编译器会生成一个合成的拷贝构造函数，除了一种特殊情况：</p>
+<ul>
+<li>当类的数据类成员析构函数（拷贝构造函数）是删除的或不可访问的，这个类的copy构造函数是delete的。</li>
+</ul>
+<p>合成的拷贝构造函数其整体思路是用 default memberwise initialization 实现的，具体点就是以一个个member的搞，对于内置类型的（int，指针，数组）是以bitwise copy（位逐次拷贝，就是一个个位复制）实现的，而对于类类型，则是递归的调用的memberwise initialization实现的。</p>
+<p>比如，如下Word类</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Word</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">     ...<span class="comment">//不存在explicit copy constructor</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> _occurs;</span><br><span class="line">    String _word;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>一个Word对象的编译器合成拷贝构造函数会拷贝其内置类型的 _occurs，然后对String member执行递归式memberwise initialization。</p>
+<p>类似于默认构造函数，C++亦把拷贝构造函数区分为trivial（无用）与non-trivial（有用）两种，只有non-trivial的实体才会被合成于程序之中。</p>
+<p>trivial 拷贝构造函数，其实就是bitwise copy，把被拷贝对象的内存空间原样拷贝过来，并不调用copy构造函数, 可能的实现方式如利用memcpy等, 因此效率高, 复制出的对象和原对象完全相同.</p>
+<h3 id="什么时候是有用拷贝构造函数？"><a href="#什么时候是有用拷贝构造函数？" class="headerlink" title="什么时候是有用拷贝构造函数？"></a>什么时候是有用拷贝构造函数？</h3><p>当合成拷贝构造函数不能表现为按位逐次拷贝语义的时候。</p>
+<ol>
+<li>当类含有类对象成员（有一个即可，不用要求全部）, 且这个成员有有用的copy构造函数或者是显式定义的</li>
+<li>当类继承自一个基类, 并且基类有有用的copy构造函数或者是显式定义的copy构造函数</li>
+<li>当类含有虚函数时</li>
+<li>当类有虚基类时.</li>
+</ol>
+<p>对于1和2, 由于copy对象时, 要copy数据成员和基类, 既然它们提供了copy构造函数, 就可以认为需要在它们的copy构造函数中进行某些bitwise copy无法实现的操作, 因此不能采用bitwise copy.</p>
+<p>对于3,  由于含有虚函数, 所以需要初始化对象的vptr, 而vptr的值不一定等于被拷贝对象的vptr值, 因为我们可以用子类对象初始化父类对象， 此时子类对象的vptr指向的子类的虚函数表，与父类的不同，所以bitwise不能满足需求.</p>
+<p>对于4, 由于含有虚基类, 情况同上，可以用子类对象初始化父类对象，子类对象和父类对象的内存布局不同。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>一个编译器合成的copy构造函数，大部分情况下是bitwise copy，但是当我们有个类对象成员，它的copy构造函数不是bitwise copy的时候，（类对象成员包括基类），或者当类有虚函数，虚基类的时候，不能对虚函数指针和虚基类指针简单粗暴的bitwise copy，这时候会对那些刺头进行 不是bitwise copy， 具体做法是调用  类对象成员的 “有用” copy构造函数 对虚函数指针和虚基类指针进行显式设定。</p>
 ]]></content>
       <categories>
         <category>深度探索C++对象模型</category>
@@ -467,6 +467,52 @@
       </tags>
   </entry>
   <entry>
+    <title>4.1 各种成员函数的调用方式（普通，static，虚函数）</title>
+    <url>/2022/02/28/4-1-%E5%90%84%E7%A7%8D%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%88%E6%99%AE%E9%80%9A%EF%BC%8Cstatic%EF%BC%8C%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%89/</url>
+    <content><![CDATA[<blockquote>
+<p>c++支持三种类型的成员函数，分别为</p>
+<ul>
+<li>static</li>
+<li>nostatic</li>
+<li>virtual。</li>
+</ul>
+<p>每一种调用方式都不尽相同。</p>
+</blockquote>
+<h3 id="非静态成员函数-（Nonstatic-Member-Functions）"><a href="#非静态成员函数-（Nonstatic-Member-Functions）" class="headerlink" title="非静态成员函数 （Nonstatic Member Functions）"></a>非静态成员函数 （Nonstatic Member Functions）</h3><ul>
+<li><p>保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。</p>
+</li>
+<li><p>事实上在c++中非静态成员函数（nostatic member function）与普通函数的调用也确实具有相同的效率。因为编译器内部会将成员函数等价转换为非成员函数，所以本质上非静态成员函数就如同一个普通函数, 如一个非静态成员函数：</p>
+<p><code>X float Point::X()</code>  </p>
+<p>就相当于一个普通函数：</p>
+<p><code>float X(Point * const this)</code></p>
+<p>编译器具体是这样做的:</p>
+<ul>
+<li><p>改写成员函数的签名，使得其可以接受一个额外参数，这个额外参数即是this指针：</p>
+</li>
+<li><p>&#96;&#96;&#96;c++<br>float Point::X();<br>&#x2F;&#x2F;成员函数X被插入额外参数this<br>float Point:: X(Point* const this );<br>&#x2F;&#x2F; 当然如果成员函数是const的，插入的参数类型将为 const Point * const 类型。（指向常量的常量指针）</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  + 将每一个对非静态数据成员的操作都改写为经过this操作。</span><br><span class="line"></span><br><span class="line">  + 将成员函数写成一个外部函数，对函数名进行名字修饰，使之成为独一无二的名称。</span><br><span class="line"></span><br><span class="line">+ 可以看出，将一个成员函数改写成一个外部函数的关键在于两点：</span><br><span class="line"></span><br><span class="line">  + 给函数提供一个可以直接读写成员数据的通道；</span><br><span class="line">  + 解决好有可能带来的名字冲突。</span><br><span class="line"></span><br><span class="line">  第一点通过给函数提供一个额外的指针参数来解决</span><br><span class="line"></span><br><span class="line">  第二点则是通过一定的规则将名字转换，使之独一无二。</span><br><span class="line"></span><br><span class="line">  由此可以做出一点总结：**一个成员函数实际上就是一个被插入了一个接受其类的常量指针类型的额外参数的非成员函数。**当然还要额外对函数的名称进行处理。额外插入的参数用来访问数据成员，而名称的特殊处理用来避免名字冲突。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 静态成员函数(Static Member Functions)</span><br><span class="line"></span><br><span class="line">静态成员函数的主要特性：没有this指针，由此带来的结果是: </span><br><span class="line"></span><br><span class="line">+ 不能够直接存取其类中的非静态成员（nostatic members），包括不能调用非静态成员函数(Nonstatic Member Functions)。</span><br><span class="line">+ 不能够声明为 const、voliatile、virtual。</span><br><span class="line">+ 它不需经由对象调用，当然，通过对象调用也被允许。</span><br><span class="line"></span><br><span class="line">​	除了缺乏一个this指针他与非静态成员函数没有太大的差别。通过对象调用和通过指针或引用调用静态成员函数，将被转化为同样的调用代码。</span><br><span class="line"></span><br><span class="line">### 虚函数</span><br><span class="line"></span><br><span class="line">如果一个函数是虚函数，那么当用指针或引用进行调用时，会被编译器重写，比如：</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line">// p-&gt;function()</span><br><span class="line">//将转化为</span><br><span class="line">(*p-&gt;vptr[1])(p);</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p>也就是通过虚函数指针找到虚函数表，然后根据固定的表项找到实际要执行的虚函数。</p>
+<ul>
+<li>其中vptr为指向虚函数表的指针，它由编译器产生。<strong>vptr也要进行名字修饰，因为一个继承体系可能有多个vptr。</strong></li>
+<li>1是虚函数在虚函数表中的索引，通过它关联到虚函数function().</li>
+</ul>
+<p>何时发生这种转换？</p>
+<ul>
+<li>当通过指针或者引用调用的时候，因为要调用的函数实体无法在编译期决定，必需待到执行期才能获得，</li>
+<li>但是当我们通过对象（不是引用，也不是指针）来调用的时候，就不会发生，因为在编译器要调用的函数实体已经被决定。此时调用的就是根据指针的静态类型决定的函数。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>4.0 名字修饰</title>
     <url>/2022/03/01/4-0-%E5%90%8D%E5%AD%97%E4%BF%AE%E9%A5%B0/</url>
     <content><![CDATA[<p>c++会对一些函数、变量的名字做修改，使每个名字独一无二，目的是为了实现：</p>
@@ -489,6 +535,37 @@
 </li>
 </ul>
 <p>使用 extern “C” 会压抑名字修饰</p>
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>4.4 inline函数</title>
+    <url>/2022/03/02/4-4-inline%E5%87%BD%E6%95%B0/</url>
+    <content><![CDATA[<h2 id="什么时候是内联函数"><a href="#什么时候是内联函数" class="headerlink" title="什么时候是内联函数"></a>什么时候是内联函数</h2><p>在下面的情况下, 一个函数是inline函数:</p>
+<ul>
+<li>声明中包含inline关键字的函数</li>
+<li>当一个函数(成员函数或非成员友元函数)定义在类内部时</li>
+<li>被声明为constexpr的函数(since C++11)</li>
+</ul>
+<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ul>
+<li><p>inline函数只是一种建议, 建议编译器将对inline函数的调用转换, 但是编译器并不一定会接受该建议, 而且非inline函数也有可能被转换, 这依赖于具体实现.</p>
+</li>
+<li><p>inline函数会增加生成的文件的大小.</p>
+</li>
+<li><p>inline函数尽可能简单. 减少不必要的局部变量, 否则可能会在结果中产生大量的局部变量.(现在的编译器应该可以优化这个了吧)</p>
+</li>
+</ul>
+<h2 id="内联函数写法示例"><a href="#内联函数写法示例" class="headerlink" title="内联函数写法示例"></a>内联函数写法示例</h2><h3 id="普通内联函数"><a href="#普通内联函数" class="headerlink" title="普通内联函数"></a>普通内联函数</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">square</span><span class="params">(<span class="type">int</span>&amp; x)</span> </span>&#123;</span><br><span class="line">	x *= x;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="type">int</span> num = <span class="number">5</span>;</span><br><span class="line">	<span class="built_in">square</span>(num);</span><br><span class="line">	std::cout &lt;&lt; num &lt;&lt; std::endl;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="成员函数内联"><a href="#成员函数内联" class="headerlink" title="成员函数内联"></a>成员函数内联</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"># A.h</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">int</span> <span class="title">get_val</span><span class="params">()</span></span>; <span class="comment">// // 成员函数声明的时候，也可以加inline，但最好是在函数定义的时候声明</span></span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">set_val</span><span class="params">(<span class="type">int</span> _val)</span> </span>&#123; val = _val; &#125; <span class="comment">// 定义在类内部的函数是隐式内联的</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 显式内联， 还是在A.h，而不是A.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">int</span> <span class="title">A::get_val</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="内联模板函数"><a href="#内联模板函数" class="headerlink" title="内联模板函数"></a>内联模板函数</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">inline</span> T <span class="title">min</span><span class="params">(<span class="type">const</span> T&amp; lhs, <span class="type">const</span> T&amp; rhs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> lhs &lt; rhs?lhs:rhs</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 ]]></content>
       <categories>
         <category>深度探索C++对象模型</category>
@@ -592,52 +669,6 @@
       </tags>
   </entry>
   <entry>
-    <title>4.1 各种成员函数的调用方式（普通，static，虚函数）</title>
-    <url>/2022/02/28/4-1-%E5%90%84%E7%A7%8D%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E7%9A%84%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F%EF%BC%88%E6%99%AE%E9%80%9A%EF%BC%8Cstatic%EF%BC%8C%E8%99%9A%E5%87%BD%E6%95%B0%EF%BC%89/</url>
-    <content><![CDATA[<blockquote>
-<p>c++支持三种类型的成员函数，分别为</p>
-<ul>
-<li>static</li>
-<li>nostatic</li>
-<li>virtual。</li>
-</ul>
-<p>每一种调用方式都不尽相同。</p>
-</blockquote>
-<h3 id="非静态成员函数-（Nonstatic-Member-Functions）"><a href="#非静态成员函数-（Nonstatic-Member-Functions）" class="headerlink" title="非静态成员函数 （Nonstatic Member Functions）"></a>非静态成员函数 （Nonstatic Member Functions）</h3><ul>
-<li><p>保证nostatic member function至少必须和一般的nonmember function有相同的效率是C++的设计准则之一。</p>
-</li>
-<li><p>事实上在c++中非静态成员函数（nostatic member function）与普通函数的调用也确实具有相同的效率。因为编译器内部会将成员函数等价转换为非成员函数，所以本质上非静态成员函数就如同一个普通函数, 如一个非静态成员函数：</p>
-<p><code>X float Point::X()</code>  </p>
-<p>就相当于一个普通函数：</p>
-<p><code>float X(Point * const this)</code></p>
-<p>编译器具体是这样做的:</p>
-<ul>
-<li><p>改写成员函数的签名，使得其可以接受一个额外参数，这个额外参数即是this指针：</p>
-</li>
-<li><p>&#96;&#96;&#96;c++<br>float Point::X();<br>&#x2F;&#x2F;成员函数X被插入额外参数this<br>float Point:: X(Point* const this );<br>&#x2F;&#x2F; 当然如果成员函数是const的，插入的参数类型将为 const Point * const 类型。（指向常量的常量指针）</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  + 将每一个对非静态数据成员的操作都改写为经过this操作。</span><br><span class="line"></span><br><span class="line">  + 将成员函数写成一个外部函数，对函数名进行名字修饰，使之成为独一无二的名称。</span><br><span class="line"></span><br><span class="line">+ 可以看出，将一个成员函数改写成一个外部函数的关键在于两点：</span><br><span class="line"></span><br><span class="line">  + 给函数提供一个可以直接读写成员数据的通道；</span><br><span class="line">  + 解决好有可能带来的名字冲突。</span><br><span class="line"></span><br><span class="line">  第一点通过给函数提供一个额外的指针参数来解决</span><br><span class="line"></span><br><span class="line">  第二点则是通过一定的规则将名字转换，使之独一无二。</span><br><span class="line"></span><br><span class="line">  由此可以做出一点总结：**一个成员函数实际上就是一个被插入了一个接受其类的常量指针类型的额外参数的非成员函数。**当然还要额外对函数的名称进行处理。额外插入的参数用来访问数据成员，而名称的特殊处理用来避免名字冲突。</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">### 静态成员函数(Static Member Functions)</span><br><span class="line"></span><br><span class="line">静态成员函数的主要特性：没有this指针，由此带来的结果是: </span><br><span class="line"></span><br><span class="line">+ 不能够直接存取其类中的非静态成员（nostatic members），包括不能调用非静态成员函数(Nonstatic Member Functions)。</span><br><span class="line">+ 不能够声明为 const、voliatile、virtual。</span><br><span class="line">+ 它不需经由对象调用，当然，通过对象调用也被允许。</span><br><span class="line"></span><br><span class="line">​	除了缺乏一个this指针他与非静态成员函数没有太大的差别。通过对象调用和通过指针或引用调用静态成员函数，将被转化为同样的调用代码。</span><br><span class="line"></span><br><span class="line">### 虚函数</span><br><span class="line"></span><br><span class="line">如果一个函数是虚函数，那么当用指针或引用进行调用时，会被编译器重写，比如：</span><br><span class="line"></span><br><span class="line">```c++</span><br><span class="line">// p-&gt;function()</span><br><span class="line">//将转化为</span><br><span class="line">(*p-&gt;vptr[1])(p);</span><br></pre></td></tr></table></figure></li>
-</ul>
-</li>
-</ul>
-<p>也就是通过虚函数指针找到虚函数表，然后根据固定的表项找到实际要执行的虚函数。</p>
-<ul>
-<li>其中vptr为指向虚函数表的指针，它由编译器产生。<strong>vptr也要进行名字修饰，因为一个继承体系可能有多个vptr。</strong></li>
-<li>1是虚函数在虚函数表中的索引，通过它关联到虚函数function().</li>
-</ul>
-<p>何时发生这种转换？</p>
-<ul>
-<li>当通过指针或者引用调用的时候，因为要调用的函数实体无法在编译期决定，必需待到执行期才能获得，</li>
-<li>但是当我们通过对象（不是引用，也不是指针）来调用的时候，就不会发生，因为在编译器要调用的函数实体已经被决定。此时调用的就是根据指针的静态类型决定的函数。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>4.3 指向类成员的指针（数据成员和函数成员）</title>
     <url>/2022/03/01/4-3-%E6%8C%87%E5%90%91%E7%B1%BB%E6%88%90%E5%91%98%E7%9A%84%E6%8C%87%E9%92%88%EF%BC%88%E6%88%90%E5%91%98%E5%8F%98%E9%87%8F%E5%92%8C%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%EF%BC%89/</url>
     <content><![CDATA[<h3 id="指向普通数据成员"><a href="#指向普通数据成员" class="headerlink" title="指向普通数据成员"></a>指向普通数据成员</h3><ul>
@@ -713,83 +744,6 @@
 </li>
 </ul>
 ]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>4.4 inline函数</title>
-    <url>/2022/03/02/4-4-inline%E5%87%BD%E6%95%B0/</url>
-    <content><![CDATA[<h2 id="什么时候是内联函数"><a href="#什么时候是内联函数" class="headerlink" title="什么时候是内联函数"></a>什么时候是内联函数</h2><p>在下面的情况下, 一个函数是inline函数:</p>
-<ul>
-<li>声明中包含inline关键字的函数</li>
-<li>当一个函数(成员函数或非成员友元函数)定义在类内部时</li>
-<li>被声明为constexpr的函数(since C++11)</li>
-</ul>
-<h2 id="注意点"><a href="#注意点" class="headerlink" title="注意点"></a>注意点</h2><ul>
-<li><p>inline函数只是一种建议, 建议编译器将对inline函数的调用转换, 但是编译器并不一定会接受该建议, 而且非inline函数也有可能被转换, 这依赖于具体实现.</p>
-</li>
-<li><p>inline函数会增加生成的文件的大小.</p>
-</li>
-<li><p>inline函数尽可能简单. 减少不必要的局部变量, 否则可能会在结果中产生大量的局部变量.(现在的编译器应该可以优化这个了吧)</p>
-</li>
-</ul>
-<h2 id="内联函数写法示例"><a href="#内联函数写法示例" class="headerlink" title="内联函数写法示例"></a>内联函数写法示例</h2><h3 id="普通内联函数"><a href="#普通内联函数" class="headerlink" title="普通内联函数"></a>普通内联函数</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">square</span><span class="params">(<span class="type">int</span>&amp; x)</span> </span>&#123;</span><br><span class="line">	x *= x;</span><br><span class="line">	<span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="type">int</span> num = <span class="number">5</span>;</span><br><span class="line">	<span class="built_in">square</span>(num);</span><br><span class="line">	std::cout &lt;&lt; num &lt;&lt; std::endl;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="成员函数内联"><a href="#成员函数内联" class="headerlink" title="成员函数内联"></a>成员函数内联</h3><figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"># A.h</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="type">int</span> <span class="title">get_val</span><span class="params">()</span></span>; <span class="comment">// // 成员函数声明的时候，也可以加inline，但最好是在函数定义的时候声明</span></span><br><span class="line">  <span class="function"><span class="type">void</span> <span class="title">set_val</span><span class="params">(<span class="type">int</span> _val)</span> </span>&#123; val = _val; &#125; <span class="comment">// 定义在类内部的函数是隐式内联的</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 显式内联， 还是在A.h，而不是A.cpp</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">int</span> <span class="title">A::get_val</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h3 id="内联模板函数"><a href="#内联模板函数" class="headerlink" title="内联模板函数"></a>内联模板函数</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function"><span class="keyword">inline</span> T <span class="title">min</span><span class="params">(<span class="type">const</span> T&amp; lhs, <span class="type">const</span> T&amp; rhs)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> lhs &lt; rhs?lhs:rhs</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>5.0 关于构造、析构的几个设计原则</title>
-    <url>/2022/03/13/5-0-%E5%85%B3%E4%BA%8E%E6%9E%84%E9%80%A0-%E6%9E%90%E6%9E%84%E7%9A%84%E5%87%A0%E4%B8%AA%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99/</url>
-    <content><![CDATA[<ul>
-<li><p>即使是<strong>一个抽象基类，如果它有非静态数据成员，也应该给它提供一个带参数的构造函数，来初始化它的数据成员</strong>。</p>
-<ul>
-<li>或许你可以通过其派生类来初始化它的数据成员（假如nostatic data member为public或protected）,但这样做的后果则是破坏了数据的封装性，使类的维护和修改更加困难。由此引申，<strong>类的data member应当被初始化，且只在其构造函数或其member function（供构造函数调用）中初始化</strong>。</li>
-</ul>
-</li>
-<li><p>一般的纯虚函数不需要定义，但<strong>假如析构函数是纯虚的，必须要定义纯虚析构函数。</strong></p>
-<ul>
-<li>必须定义纯虚析构函数，而不能仅仅声明它的原因在于：每一个继承类的析构函数会被编译器加以扩展，以静态调用方式其每一个基类的析构函数（假如有的话，不论是显示的还是编译器合成的），所以只要任何一个基类的析构函数缺乏定义，就会导致链接失败。所以即使纯虚函数在语法上允许我们只声明而不定义纯虚函数，但还是必须实现该纯虚析构函数。</li>
-<li>因此假如有其他纯虚函数，尽量不要将析构函数设计为纯虚的，除非找不到其他纯虚函数。</li>
-</ul>
-</li>
-<li><p><strong>真的必要的时候才使用虚函数，不要滥用虚函数</strong>。虚函数意味着不小的成本：</p>
-<ul>
-<li>每一个对象要多负担一个word的vptr。</li>
-<li>给每一个构造函数、拷贝构造函数、拷贝赋值运算符、析构函数（不论是显示的还是编译器合成的），插入一些代码来初始化vptr，这些代码必须被放在所有基类构造函数的调用之后，但需在任意用户代码之前。没有构造函数则需要合成，并插入代码。</li>
-<li>类的copy行为将不具有bitwise语意，没有那么高效的复制控制。</li>
-</ul>
-</li>
-<li><p><strong>不能决定一个虚函数是否需要 const ，那么就不要它</strong>。</p>
-<ul>
-<li>因为你不知道它的派生类版本会不会修改数据成员</li>
-</ul>
-</li>
-<li><p>在构造函数或析构函数中调用虚函数将不具有多态的特性，因此<strong>为了性能考虑，若要在构造函数或析构函数中调用虚函数，应当直接以静态方式（显示调用，即通过作用域方式调用）调用。</strong></p>
-<ul>
-<li>基类的构造函数调用的虚函数，永远是基类版本，哪怕是派生类的构造函数调用基类的构造函数，间接调用的这个虚函数。<strong>这是由vptr初始化的位置决定的  ——在所有基类构造函数调用之后，在成员初始化队列之前。</strong></li>
-<li>析构函数同理</li>
-</ul>
-</li>
-</ul>
-<p>所以如下代码：</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Abstract_base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Abstract_base</span>() = <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">interface</span><span class="params">()</span> <span class="type">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">const</span> <span class="type">char</span>* <span class="title">mumble</span><span class="params">()</span> <span class="type">const</span> </span>&#123;<span class="keyword">return</span> _mumble;&#125;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="type">char</span> *_mumble;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<p>应该修改为：</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Abstract_base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Abstract_base</span>();<span class="comment">//放弃纯虚</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">interface</span><span class="params">()</span> </span>= <span class="number">0</span>;<span class="comment">//不再是const</span></span><br><span class="line">    <span class="function"><span class="type">const</span> <span class="type">char</span>* <span class="title">mumble</span><span class="params">()</span> <span class="type">const</span> </span>&#123;<span class="keyword">return</span> _mumble;&#125;<span class="comment">//不再是virtual</span></span><br><span class="line">    <span class="built_in">Abstract_base</span>(<span class="type">char</span> *pc=<span class="number">0</span>); <span class="comment">//增加了构造函数初始化_mumble</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="type">char</span> *_mumble;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>深度探索C++对象模型</category>
       </categories>
@@ -886,6 +840,52 @@
       </tags>
   </entry>
   <entry>
+    <title>5.0 关于构造、析构的几个设计原则</title>
+    <url>/2022/03/13/5-0-%E5%85%B3%E4%BA%8E%E6%9E%84%E9%80%A0-%E6%9E%90%E6%9E%84%E7%9A%84%E5%87%A0%E4%B8%AA%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99/</url>
+    <content><![CDATA[<ul>
+<li><p>即使是<strong>一个抽象基类，如果它有非静态数据成员，也应该给它提供一个带参数的构造函数，来初始化它的数据成员</strong>。</p>
+<ul>
+<li>或许你可以通过其派生类来初始化它的数据成员（假如nostatic data member为public或protected）,但这样做的后果则是破坏了数据的封装性，使类的维护和修改更加困难。由此引申，<strong>类的data member应当被初始化，且只在其构造函数或其member function（供构造函数调用）中初始化</strong>。</li>
+</ul>
+</li>
+<li><p>一般的纯虚函数不需要定义，但<strong>假如析构函数是纯虚的，必须要定义纯虚析构函数。</strong></p>
+<ul>
+<li>必须定义纯虚析构函数，而不能仅仅声明它的原因在于：每一个继承类的析构函数会被编译器加以扩展，以静态调用方式其每一个基类的析构函数（假如有的话，不论是显示的还是编译器合成的），所以只要任何一个基类的析构函数缺乏定义，就会导致链接失败。所以即使纯虚函数在语法上允许我们只声明而不定义纯虚函数，但还是必须实现该纯虚析构函数。</li>
+<li>因此假如有其他纯虚函数，尽量不要将析构函数设计为纯虚的，除非找不到其他纯虚函数。</li>
+</ul>
+</li>
+<li><p><strong>真的必要的时候才使用虚函数，不要滥用虚函数</strong>。虚函数意味着不小的成本：</p>
+<ul>
+<li>每一个对象要多负担一个word的vptr。</li>
+<li>给每一个构造函数、拷贝构造函数、拷贝赋值运算符、析构函数（不论是显示的还是编译器合成的），插入一些代码来初始化vptr，这些代码必须被放在所有基类构造函数的调用之后，但需在任意用户代码之前。没有构造函数则需要合成，并插入代码。</li>
+<li>类的copy行为将不具有bitwise语意，没有那么高效的复制控制。</li>
+</ul>
+</li>
+<li><p><strong>不能决定一个虚函数是否需要 const ，那么就不要它</strong>。</p>
+<ul>
+<li>因为你不知道它的派生类版本会不会修改数据成员</li>
+</ul>
+</li>
+<li><p>在构造函数或析构函数中调用虚函数将不具有多态的特性，因此<strong>为了性能考虑，若要在构造函数或析构函数中调用虚函数，应当直接以静态方式（显示调用，即通过作用域方式调用）调用。</strong></p>
+<ul>
+<li>基类的构造函数调用的虚函数，永远是基类版本，哪怕是派生类的构造函数调用基类的构造函数，间接调用的这个虚函数。<strong>这是由vptr初始化的位置决定的  ——在所有基类构造函数调用之后，在成员初始化队列之前。</strong></li>
+<li>析构函数同理</li>
+</ul>
+</li>
+</ul>
+<p>所以如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Abstract_base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Abstract_base</span>() = <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">interface</span><span class="params">()</span> <span class="type">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">const</span> <span class="type">char</span>* <span class="title">mumble</span><span class="params">()</span> <span class="type">const</span> </span>&#123;<span class="keyword">return</span> _mumble;&#125;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="type">char</span> *_mumble;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>应该修改为：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Abstract_base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Abstract_base</span>();<span class="comment">//放弃纯虚</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">interface</span><span class="params">()</span> </span>= <span class="number">0</span>;<span class="comment">//不再是const</span></span><br><span class="line">    <span class="function"><span class="type">const</span> <span class="type">char</span>* <span class="title">mumble</span><span class="params">()</span> <span class="type">const</span> </span>&#123;<span class="keyword">return</span> _mumble;&#125;<span class="comment">//不再是virtual</span></span><br><span class="line">    <span class="built_in">Abstract_base</span>(<span class="type">char</span> *pc=<span class="number">0</span>); <span class="comment">//增加了构造函数初始化_mumble</span></span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line">    <span class="type">char</span> *_mumble;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>5.3 拷贝赋值运算符语意学</title>
     <url>/2022/03/13/5-3-%E6%8B%B7%E8%B4%9D%E8%B5%8B%E5%80%BC%E8%BF%90%E7%AE%97%E7%AC%A6%E8%AF%AD%E6%84%8F%E5%AD%A6/</url>
     <content><![CDATA[<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>当我们设计了一个class，并以一个class object指定给另一个class object时，我们知道会调用拷贝赋值运算符，而对于这个拷贝赋值运算符我们有三种选择：</p>
@@ -923,27 +923,6 @@
 <h2 id="程序员定义的显式拷贝赋值运算符"><a href="#程序员定义的显式拷贝赋值运算符" class="headerlink" title="程序员定义的显式拷贝赋值运算符"></a>程序员定义的显式拷贝赋值运算符</h2><p>需要考虑是不是显式提供一个<em>operator &#x3D;</em>. 一个原则是:</p>
 <p>​    <strong>只有在默认复制赋值运算符的行为不安全或不正确时, 才需要显式定义复制赋值运算符</strong>.</p>
 <p>由于拷贝赋值运算符不像构造函数一样，会被编译器默默加很多代码，所以多次调用虚基类的拷贝赋值运算符不会带来错误，但是<strong>为了确保虚基类被正确的拷贝</strong>，我们可以把虚基类的拷贝赋值操作放在最后，调用方式：<code>类名::operator=(对象名)</code>，当然书中建议：<strong>不允许任何一个virtual base class的拷贝操作，或者更进一步地，不在任何virtual base class中声明数据</strong>。</p>
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>5.4 析构语意学</title>
-    <url>/2022/03/15/5-4-%E6%9E%90%E6%9E%84%E8%AF%AD%E6%84%8F%E5%AD%A6/</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>如果类没有定义析构函数，那么<strong>只有在类内置的数据成员或者类的基类拥有程序员定义的析构函数的情况下，编译器才会合成出一个</strong>。否则，析构函数将会被视为不需要，自然也就不需要被合成（更不需要被调用）。</p>
-<h2 id="什么时候需要程序员定义析构函数"><a href="#什么时候需要程序员定义析构函数" class="headerlink" title="什么时候需要程序员定义析构函数"></a>什么时候需要程序员定义析构函数</h2><p>书中提到一个值得注意的问题, 并不是定义了构造函数就需要定义析构函数, 这种”对称”是无意义的. 只有当需要一个析构函数时, 我们才应该显式定义之. 那么什么时候需要呢? 首先要搞清楚析构函数的作用, 她是对象的生命周期的终结, 而函数体内执行的主要是是对对象持有的资源的释放, 例如在构造函数中动态申请的空间. </p>
-<h2 id="析构函数操作顺序"><a href="#析构函数操作顺序" class="headerlink" title="析构函数操作顺序"></a>析构函数操作顺序</h2><p>析构函数的操作与构造函数的顺序相反：</p>
-<ul>
-<li>本身的析构函数被执行。</li>
-<li>以声明的相反顺序调用member object 的析构函数</li>
-<li>重设vptr 指向适当的基类的虚函数表</li>
-<li>以声明相反的顺序调用基类的析构函数</li>
-<li>如果当前类是 most-derived class（最底层类），那么以构造的相反顺序调用虚基类的析构函数。</li>
-</ul>
 ]]></content>
       <categories>
         <category>深度探索C++对象模型</category>
@@ -993,29 +972,6 @@
 </li>
 </ul>
 <p>当数组的生命周期结束的时候，则要逐一调用析构函数，然后回收内存。</p>
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>6.3 临时对象的生命周期</title>
-    <url>/2022/03/16/6-3-%E4%B8%B4%E6%97%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</url>
-    <content><![CDATA[<p>很多时候，产生临时对象是必不可少的，但是何时摧毁一个临时对象才是最佳行为呢？过早或过晚都不太适合，过早有可能使得程序错误，过晚的话又使得资源没有得到及时回收。</p>
-<p>C++标准规定临时性对象的摧毁应当作为造成产生这个临时对象的完整表达式的最后一个步骤。比如：</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">string <span class="title">s1</span><span class="params">(<span class="string">&quot;hello &quot;</span>)</span>, <span class="title">s2</span><span class="params">(<span class="string">&quot;world &quot;</span>)</span>,<span class="title">s3</span><span class="params">(<span class="string">&quot;by Adoo&quot;</span>)</span></span>;</span><br><span class="line">std::cout&lt;&lt;s1+s2+s3&lt;&lt;std::endl;</span><br></pre></td></tr></table></figure>
-
-<p>s1+s2结果的临时对象，会在cout整条语句结束的时候析构。</p>
-<p>此外，C++ standard又有两个特例（不用关注, 没什么意义)：</p>
-<ul>
-<li><p>凡含有表达式执行结果的临时对象，应该存留到object的初始化操作完成为止。</p>
-</li>
-<li><p>如果一个临时性对象被绑定于一个reference，对象将会被残留，直到被初始化的reference声明结束，或临时对象的生命期结束。</p>
-</li>
-</ul>
 ]]></content>
       <categories>
         <category>深度探索C++对象模型</category>
@@ -1111,6 +1067,50 @@
       </tags>
   </entry>
   <entry>
+    <title>5.4 析构语意学</title>
+    <url>/2022/03/15/5-4-%E6%9E%90%E6%9E%84%E8%AF%AD%E6%84%8F%E5%AD%A6/</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>如果类没有定义析构函数，那么<strong>只有在类内置的数据成员或者类的基类拥有程序员定义的析构函数的情况下，编译器才会合成出一个</strong>。否则，析构函数将会被视为不需要，自然也就不需要被合成（更不需要被调用）。</p>
+<h2 id="什么时候需要程序员定义析构函数"><a href="#什么时候需要程序员定义析构函数" class="headerlink" title="什么时候需要程序员定义析构函数"></a>什么时候需要程序员定义析构函数</h2><p>书中提到一个值得注意的问题, 并不是定义了构造函数就需要定义析构函数, 这种”对称”是无意义的. 只有当需要一个析构函数时, 我们才应该显式定义之. 那么什么时候需要呢? 首先要搞清楚析构函数的作用, 她是对象的生命周期的终结, 而函数体内执行的主要是是对对象持有的资源的释放, 例如在构造函数中动态申请的空间. </p>
+<h2 id="析构函数操作顺序"><a href="#析构函数操作顺序" class="headerlink" title="析构函数操作顺序"></a>析构函数操作顺序</h2><p>析构函数的操作与构造函数的顺序相反：</p>
+<ul>
+<li>本身的析构函数被执行。</li>
+<li>以声明的相反顺序调用member object 的析构函数</li>
+<li>重设vptr 指向适当的基类的虚函数表</li>
+<li>以声明相反的顺序调用基类的析构函数</li>
+<li>如果当前类是 most-derived class（最底层类），那么以构造的相反顺序调用虚基类的析构函数。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>6.3 临时对象的生命周期</title>
+    <url>/2022/03/16/6-3-%E4%B8%B4%E6%97%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</url>
+    <content><![CDATA[<p>很多时候，产生临时对象是必不可少的，但是何时摧毁一个临时对象才是最佳行为呢？过早或过晚都不太适合，过早有可能使得程序错误，过晚的话又使得资源没有得到及时回收。</p>
+<p>C++标准规定临时性对象的摧毁应当作为造成产生这个临时对象的完整表达式的最后一个步骤。比如：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">string <span class="title">s1</span><span class="params">(<span class="string">&quot;hello &quot;</span>)</span>, <span class="title">s2</span><span class="params">(<span class="string">&quot;world &quot;</span>)</span>,<span class="title">s3</span><span class="params">(<span class="string">&quot;by Adoo&quot;</span>)</span></span>;</span><br><span class="line">std::cout&lt;&lt;s1+s2+s3&lt;&lt;std::endl;</span><br></pre></td></tr></table></figure>
+
+<p>s1+s2结果的临时对象，会在cout整条语句结束的时候析构。</p>
+<p>此外，C++ standard又有两个特例（不用关注, 没什么意义)：</p>
+<ul>
+<li><p>凡含有表达式执行结果的临时对象，应该存留到object的初始化操作完成为止。</p>
+</li>
+<li><p>如果一个临时性对象被绑定于一个reference，对象将会被残留，直到被初始化的reference声明结束，或临时对象的生命期结束。</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>7.1 template</title>
     <url>/2022/03/06/7-1-template/</url>
     <content><![CDATA[<h3 id="模板的实例化"><a href="#模板的实例化" class="headerlink" title="模板的实例化"></a>模板的实例化</h3><p><strong>一个模板只有被使用到，才会被实例化，否则不会被实例化。对于一个实例化后的模板来说，未被调用的成员函数将不会被实例化，只有成员函数被使用时，C++标准才要求实例化他们。</strong>其原因，有两点：</p>
@@ -1154,23 +1154,6 @@
       </tags>
   </entry>
   <entry>
-    <title>7.2 异常处理</title>
-    <url>/2022/03/17/7-2-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/</url>
-    <content><![CDATA[<p>C++异常处理由三个主要的语汇组件组成：</p>
-<ul>
-<li>一个 throw 自己。它在程序某处发出一个异常。被丢出去的异常可以是内建类型，也可以是使用者自定义类型。</li>
-<li>一个或多个 catch 子句。每个 catch 子句都是一个异常处理。它用来表示，这个子句准备处理某种类型的异常，并且在封闭的大括号区域中提供实际处理<br>程序。</li>
-<li>一个 try 区段。它包含了一系列的语句，这些语句可能会引发 catch 子句起作用。</li>
-</ul>
-]]></content>
-      <categories>
-        <category>深度探索C++对象模型</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>7.3 执行期类型识别(RTTI)</title>
     <url>/2022/03/17/7-3-%E6%89%A7%E8%A1%8C%E6%9C%9F%E7%B1%BB%E5%9E%8B%E8%AF%86%E5%88%AB-RTTI/</url>
     <content><![CDATA[<h3 id="RTTI"><a href="#RTTI" class="headerlink" title="RTTI"></a>RTTI</h3><p>RTTI，指在执行期获取指针所指对象的动态类型</p>
@@ -1197,6 +1180,23 @@
 <ul>
 <li><p>typeid运算符</p>
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span> &#123;...&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base &#123;...&#125;;</span><br><span class="line"></span><br><span class="line">Base *ptr = <span class="keyword">new</span> Derived;</span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">typeid</span>(ptr) == <span class="built_in">typeid</span>(Derived*))&#123;</span><br><span class="line">	<span class="comment">// ... 处理ptr</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ul>
+]]></content>
+      <categories>
+        <category>深度探索C++对象模型</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>7.2 异常处理</title>
+    <url>/2022/03/17/7-2-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86/</url>
+    <content><![CDATA[<p>C++异常处理由三个主要的语汇组件组成：</p>
+<ul>
+<li>一个 throw 自己。它在程序某处发出一个异常。被丢出去的异常可以是内建类型，也可以是使用者自定义类型。</li>
+<li>一个或多个 catch 子句。每个 catch 子句都是一个异常处理。它用来表示，这个子句准备处理某种类型的异常，并且在封闭的大括号区域中提供实际处理<br>程序。</li>
+<li>一个 try 区段。它包含了一系列的语句，这些语句可能会引发 catch 子句起作用。</li>
 </ul>
 ]]></content>
       <categories>
@@ -1280,79 +1280,6 @@
 
 
 <p>关于列表初始化的所有知识点就是这些，如有遗漏或者遗漏的大家积极留言哈，请持续关注~</p>
-]]></content>
-      <categories>
-        <category>C/C++基础</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>C++ 可变参数模板</title>
-    <url>/2022/03/11/C-%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0%E6%A8%A1%E6%9D%BF/</url>
-    <content><![CDATA[<h2 id="可变参数模板"><a href="#可变参数模板" class="headerlink" title="可变参数模板"></a>可变参数模板</h2><ul>
-<li><code>可变参数模板(variadic template)</code>为一个接受可变数目参数的模板函数或模板类。</li>
-<li><code>参数包(parameter packet)</code>可变数目的参数。</li>
-<li><code>模板参数包(template parameter packet)</code>表示零个或多个模板参数。</li>
-<li><code>函数参数包(function parameter packet)</code>表示零个或多个函数参数。</li>
-</ul>
-<p>用省略号指出一个<code>模板参数</code>或<code>函数参数</code>表示一个包。</p>
-<ul>
-<li>用<code>class...</code>或<code>typename...</code>指出接下来的参数表示零个或多个类型的列表。</li>
-<li>一个类型名后面跟一个省略号表示零个或多个给定类型的<code>非类型参数</code>的列表(可以是一个函数的实参列表).</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 用class 也一样</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt; </span><br><span class="line"><span class="comment">// 如果函数参数列表中一个参数的类型是一个模板参数包,</span></span><br><span class="line"><span class="comment">// 则此参数也是一个函数参数包</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(<span class="type">const</span> T&amp; t, <span class="type">const</span> Args&amp;... rest)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>编译器从函数实参推断模板参数类型.对可变参数模板,编译器还会推断包中的参数数目.用<code>sizeof...()</code>可以获取模板参数包的参数个数和函数参数包的参数个数.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">const</span> T&amp; t, <span class="type">const</span> Args&amp;... rest)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="keyword">sizeof</span>...(Args) &lt;&lt; std::endl;</span><br><span class="line">    std::cout &lt;&lt; <span class="keyword">sizeof</span>...(rest) &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="type">double</span> d = <span class="number">3.14</span>;</span><br><span class="line">    string s = <span class="string">&quot;haha&quot;</span>;</span><br><span class="line">    <span class="built_in">foo</span>(i, s, <span class="number">42</span>, d); <span class="comment">// 3 ,3 </span></span><br><span class="line">    <span class="built_in">foo</span>(s, <span class="number">42</span>, <span class="string">&quot;hoi&quot;</span>); <span class="comment">// 2, 2</span></span><br><span class="line">    <span class="built_in">foo</span>(d,s); <span class="comment">// 1, 1</span></span><br><span class="line">    <span class="built_in">foo</span>(<span class="string">&quot;hihihi&quot;</span>); <span class="comment">// 0, 0</span></span><br><span class="line">    <span class="built_in">foo</span>(d,<span class="string">&quot;asdf&quot;</span>, <span class="string">&quot;asdfasdf&quot;</span>); <span class="comment">// 2, 2</span></span><br><span class="line">    <span class="comment">// 这五种调用会实例化出五个不同版本的foo().</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="可变参数函数的递归调用"><a href="#可变参数函数的递归调用" class="headerlink" title="可变参数函数的递归调用"></a>可变参数函数的递归调用</h2><p>使用<code>initializer_list</code>可以定义一个接受可变数目实参的函数,但这些参数必须具有同一类型。</p>
-<p>当我们既不知道实参数目也不知道类型时就可以用可变参数模板函数.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 用于终止递归, 并打印最后一个元素</span></span><br><span class="line"><span class="comment">// 必须在可变参数版本之前声明，原因是C++的名字查找规则要求：只考虑在名字的使用之前出现的声明</span></span><br><span class="line"><span class="comment">// 若在之后声明, 则无法通过编译, </span></span><br><span class="line"><span class="comment">// note:   candidate expects at least 2 arguments, 1 provided</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function">ostream &amp;<span class="title">print</span><span class="params">(ostream&amp; os, <span class="type">const</span> T &amp;t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> os &lt;&lt; t &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 可变参数函数通常是递归的,每一步处理最前面的一个实参, 然后用剩余参数调用自身.</span></span><br><span class="line"><span class="comment">// 除了最后一个元素之外的其他元素都会调用这个版本的print</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ... Args&gt;</span><br><span class="line"><span class="function">ostream &amp;<span class="title">print</span><span class="params">(ostream&amp; os, <span class="type">const</span> T&amp; t,<span class="type">const</span> Args&amp;... rest)</span></span></span><br><span class="line"><span class="function"><span class="comment">// const Args&amp;.. rest</span></span></span><br><span class="line"><span class="function"><span class="comment">// 表示将const Args&amp; 应用到包中的每一个元素, 其扩展结果为一个逗号分隔的零个或多个类型的列表，</span></span></span><br><span class="line"><span class="function"><span class="comment">// 每个类型都形如const type&amp;</span></span></span><br><span class="line"><span class="function"><span class="comment">// print(std::cout, 12, 13.3, &quot;asfdae&quot;);</span></span></span><br><span class="line"><span class="function"><span class="comment">// 实例化为 print(ostream&amp;, const int&amp;, const double&amp;, const string&amp;)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    os &lt;&lt; t &lt;&lt; <span class="string">&quot;, &quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">print</span>(os, rest...);</span><br><span class="line">    <span class="comment">// 模式是函数参数包的名字 rest.</span></span><br><span class="line">    <span class="comment">// 扩展为一个由由包中元素组成的、逗号分隔的列表.</span></span><br><span class="line">    <span class="comment">// print(os, 13.3, &quot;asfdae&quot;);</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">print</span>(std::cout, <span class="number">12</span>, <span class="number">13.3</span>, <span class="string">&quot;asfdae&quot;</span>); <span class="comment">// 调用可变参版本</span></span><br><span class="line">    <span class="built_in">print</span>(std::cout, <span class="number">13.3</span>, <span class="string">&quot;asfdae&quot;</span>); <span class="comment">// 调用可变参版本</span></span><br><span class="line">    <span class="built_in">print</span>(std::cout, <span class="string">&quot;asfdae&quot;</span>); <span class="comment">// 两个print版本的参数都是匹配的，但是非可变参数模板比可变参数</span></span><br><span class="line">                                <span class="comment">// 模板更特例化, 因此编译器选择非可变参数版本</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol>
-<li>非可变参版本的声明必须在可变参函数之前,否则,可变参版本的<code>print</code>将会一直调用自身,直到耗尽参数包,用一个<code>os</code>参数去调用<code>print</code>(无法通过编译).</li>
-<li>对一个没有<code>&lt;&lt;</code>运算符的类型的对象调用<code>print</code>，编译都无法通过,从模板实例化出的对应版本的函数终究会用这个参数调用<code>os &lt;&lt; myclass</code>.</li>
-<li>对于<code>print(std::cout, &quot;asfdae&quot;)</code>,两个版本的<code>print</code>都提供同样好的参数匹配, 但是非可变参数模板比可变参数模板更加特例化, 因此编译器选择非可变参数版本(C++ primer 16.3 P615).</li>
-</ol>
-<h2 id="包扩展"><a href="#包扩展" class="headerlink" title="包扩展"></a>包扩展</h2><p>对于一个<code>参数包</code>(上面的rest),我们除了获取其大小外,唯一能做的就是扩展它(<code>expand</code>).扩展包就是对包中的每一个元素都应用一个指定的模式,并得到展开后的逗号分隔的列表, 这里的<code>模式</code>通常为一些类型限定修饰符.通过在模式右边放一个省略号(…)触发扩展操作。</p>
-<ul>
-<li><code>const Args&amp;... rest</code>扩展模板参数包,将<code>const type&amp;</code>应用到包中的每一个元素,为<code>print</code>生成参数列表。</li>
-</ul>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="built_in">print</span>(cout, <span class="number">2</span>, <span class="number">3.14</span>, <span class="string">&quot;asd&quot;</span>);<span class="comment">// 包中有两个参数</span></span><br></pre></td></tr></table></figure>
-
-<p>此调用被实例化为</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">ostream&amp; <span class="title">print</span><span class="params">(ostream&amp;, <span class="type">const</span> <span class="type">int</span>&amp;, <span class="type">const</span> <span class="type">double</span>&amp;, <span class="type">const</span> <span class="type">char</span>[<span class="number">4</span>]&amp;)</span></span>;</span><br></pre></td></tr></table></figure>
-
-<p>在<code>print</code>函数的<code>return</code>语句中的递归调用也触发了扩展(有…出现),只是它直接将<code>rest</code>扩展为逗号分隔的参数列表, 而没有改变各个元素本身的类型。 考虑更清晰的一个例子,有这样一个函数:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function">string <span class="title">debug_rep</span><span class="params">(<span class="type">const</span> T&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ostringstream ss;</span><br><span class="line">    ss &lt;&lt; t;</span><br><span class="line">    <span class="keyword">return</span> ss.<span class="built_in">str</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>它通过流操作符从传进来的参数获取一个字符串.</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function">ostream &amp;<span class="title">errorMsg</span><span class="params">(ostream&amp;os, <span class="type">const</span> Args&amp;... rest)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">print</span>(os, <span class="built_in">debug_rep</span>(rest)...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p><code>errorMsg</code>将传进来的参数包<code>rest</code>用<code>debug_rep</code>扩展</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="built_in">errorMsg</span>(cerr, fcnName, code.<span class="built_in">num</span>(), otherData, <span class="string">&quot;balabala&quot;</span>, item);</span><br></pre></td></tr></table></figure>
-
-<p>扩展结果:</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">print(cerr, debug_rep(fcnName), debug_rep(code.num(),</span><br><span class="line">            debug_rep(otherData), debug_rep(&quot;balabala&quot;),</span><br><span class="line">            debug_rep(item)));</span><br></pre></td></tr></table></figure>
-
-<p>相对的:</p>
-<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">print(os, debug_rep(rest...));</span><br></pre></td></tr></table></figure>
-
-<p>展开为将包传递给了debug_rep:<code>print(os, debug_rep(a1,a2,a3...an))</code>，所以这个调用会失败,<code>debug_rep</code>没有匹配的参数列表。</p>
-<h2 id="转发参数包"><a href="#转发参数包" class="headerlink" title="转发参数包"></a>转发参数包</h2><p>可变参数模板一个更为常见的使用场景是用可变参数实例化一个类,通常一个类有多个不同参数列表的构造函数,这就要求我们必须将不同数量不同类型的参数原封不动地传递给这个类的构造函数。</p>
-<p>标准库中的容器通常有个<code>emplace_back()</code>成员, 它是一个可变参数模板成员函数,它直接在容器管理的内存空间中用所给参数直接构造一个元素。</p>
-<p>保持类型信息是一个两阶段的过程。</p>
-<ul>
-<li>保持实参中的类型信息——将<code>emplace_back()</code>的参数定义为模板类型参数的右值引用。</li>
-<li>将这些参数传递给<code>construct</code>时，用<code>forward</code>保持实参原始类型。</li>
-</ul>
-<p>考虑标准库中的<code>vector</code>的<code>emplace_back()</code>实现:</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">template</span> &lt;<span class="keyword">class</span>... _Valty&gt;</span><br><span class="line">    <span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">emplace_back</span><span class="params">(_Valty&amp;&amp;... _Val)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// insert by perfectly forwarding into element at end, provide strong guarantee</span></span><br><span class="line">        <span class="keyword">auto</span>&amp; _My_data   = _Mypair._Myval2;</span><br><span class="line">        pointer&amp; _Mylast = _My_data._Mylast;</span><br><span class="line">        <span class="keyword">if</span> (_Mylast != _My_data._Myend) &#123;</span><br><span class="line">            <span class="keyword">return</span> _Emplace_back_with_unused_capacity(_STD forward&lt;_Valty&gt;(_Val)...);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        _Ty&amp; _Result = *_Emplace_reallocate(_Mylast, _STD forward&lt;_Valty&gt;(_Val)...);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> _HAS_CXX17</span></span><br><span class="line">        <span class="keyword">return</span> _Result;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span> <span class="comment">// ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv</span></span></span><br><span class="line">        (<span class="type">void</span>) _Result;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// _HAS_CXX17</span></span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>暂时不考虑那么多细枝末节,仅专注于对可变参数的处理, 首先,其参数<code>emplace_back(_Valty&amp;&amp;... _Val)</code>用右值引用扩展了参数包中的所有参数, 在传递参数包<code>_Val</code>时，用<code>forward&lt;_Valty&gt;(_Val)...</code>同时既扩展了模板参数包<code>_Valty</code>也扩展了函数参数包<code>_Val</code>,最终会通过<code>allocator::construct()</code>调用容器的元素类型的构造函数.</p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p> <a href="https://www.cnblogs.com/qicosmos/p/4325949.html">泛化之美–C++11可变模版参数的妙用</a></p>
 ]]></content>
       <categories>
         <category>C/C++基础</category>
@@ -1471,12 +1398,70 @@
       </tags>
   </entry>
   <entry>
-    <title>C++ 枚举类</title>
-    <url>/2022/03/21/C-%E6%9E%9A%E4%B8%BE%E7%B1%BB/</url>
-    <content><![CDATA[<h3 id="枚举类"><a href="#枚举类" class="headerlink" title="枚举类"></a>枚举类</h3><p>枚举类分为限定作用域和不限定作用两种类型。</p>
-<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum class</span> <span class="title class_">color</span> &#123;red, yellow, green&#125;; <span class="comment">// 限定作用域</span></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">color</span> &#123;red, yellow, green&#125;; <span class="comment">// 不限定作用域</span></span><br></pre></td></tr></table></figure>
+    <title>C++ 可变参数模板</title>
+    <url>/2022/03/11/C-%E5%8F%AF%E5%8F%98%E5%8F%82%E6%95%B0%E6%A8%A1%E6%9D%BF/</url>
+    <content><![CDATA[<h2 id="可变参数模板"><a href="#可变参数模板" class="headerlink" title="可变参数模板"></a>可变参数模板</h2><ul>
+<li><code>可变参数模板(variadic template)</code>为一个接受可变数目参数的模板函数或模板类。</li>
+<li><code>参数包(parameter packet)</code>可变数目的参数。</li>
+<li><code>模板参数包(template parameter packet)</code>表示零个或多个模板参数。</li>
+<li><code>函数参数包(function parameter packet)</code>表示零个或多个函数参数。</li>
+</ul>
+<p>用省略号指出一个<code>模板参数</code>或<code>函数参数</code>表示一个包。</p>
+<ul>
+<li>用<code>class...</code>或<code>typename...</code>指出接下来的参数表示零个或多个类型的列表。</li>
+<li>一个类型名后面跟一个省略号表示零个或多个给定类型的<code>非类型参数</code>的列表(可以是一个函数的实参列表).</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 用class 也一样</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt; </span><br><span class="line"><span class="comment">// 如果函数参数列表中一个参数的类型是一个模板参数包,</span></span><br><span class="line"><span class="comment">// 则此参数也是一个函数参数包</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">func</span><span class="params">(<span class="type">const</span> T&amp; t, <span class="type">const</span> Args&amp;... rest)</span></span>;</span><br></pre></td></tr></table></figure>
 
-<p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220321224553.png" alt="image-20220221215329693"></p>
+<p>编译器从函数实参推断模板参数类型.对可变参数模板,编译器还会推断包中的参数数目.用<code>sizeof...()</code>可以获取模板参数包的参数个数和函数参数包的参数个数.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(<span class="type">const</span> T&amp; t, <span class="type">const</span> Args&amp;... rest)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="keyword">sizeof</span>...(Args) &lt;&lt; std::endl;</span><br><span class="line">    std::cout &lt;&lt; <span class="keyword">sizeof</span>...(rest) &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> i = <span class="number">0</span>;</span><br><span class="line">    <span class="type">double</span> d = <span class="number">3.14</span>;</span><br><span class="line">    string s = <span class="string">&quot;haha&quot;</span>;</span><br><span class="line">    <span class="built_in">foo</span>(i, s, <span class="number">42</span>, d); <span class="comment">// 3 ,3 </span></span><br><span class="line">    <span class="built_in">foo</span>(s, <span class="number">42</span>, <span class="string">&quot;hoi&quot;</span>); <span class="comment">// 2, 2</span></span><br><span class="line">    <span class="built_in">foo</span>(d,s); <span class="comment">// 1, 1</span></span><br><span class="line">    <span class="built_in">foo</span>(<span class="string">&quot;hihihi&quot;</span>); <span class="comment">// 0, 0</span></span><br><span class="line">    <span class="built_in">foo</span>(d,<span class="string">&quot;asdf&quot;</span>, <span class="string">&quot;asdfasdf&quot;</span>); <span class="comment">// 2, 2</span></span><br><span class="line">    <span class="comment">// 这五种调用会实例化出五个不同版本的foo().</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="可变参数函数的递归调用"><a href="#可变参数函数的递归调用" class="headerlink" title="可变参数函数的递归调用"></a>可变参数函数的递归调用</h2><p>使用<code>initializer_list</code>可以定义一个接受可变数目实参的函数,但这些参数必须具有同一类型。</p>
+<p>当我们既不知道实参数目也不知道类型时就可以用可变参数模板函数.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 用于终止递归, 并打印最后一个元素</span></span><br><span class="line"><span class="comment">// 必须在可变参数版本之前声明，原因是C++的名字查找规则要求：只考虑在名字的使用之前出现的声明</span></span><br><span class="line"><span class="comment">// 若在之后声明, 则无法通过编译, </span></span><br><span class="line"><span class="comment">// note:   candidate expects at least 2 arguments, 1 provided</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function">ostream &amp;<span class="title">print</span><span class="params">(ostream&amp; os, <span class="type">const</span> T &amp;t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> os &lt;&lt; t &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 可变参数函数通常是递归的,每一步处理最前面的一个实参, 然后用剩余参数调用自身.</span></span><br><span class="line"><span class="comment">// 除了最后一个元素之外的其他元素都会调用这个版本的print</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ... Args&gt;</span><br><span class="line"><span class="function">ostream &amp;<span class="title">print</span><span class="params">(ostream&amp; os, <span class="type">const</span> T&amp; t,<span class="type">const</span> Args&amp;... rest)</span></span></span><br><span class="line"><span class="function"><span class="comment">// const Args&amp;.. rest</span></span></span><br><span class="line"><span class="function"><span class="comment">// 表示将const Args&amp; 应用到包中的每一个元素, 其扩展结果为一个逗号分隔的零个或多个类型的列表，</span></span></span><br><span class="line"><span class="function"><span class="comment">// 每个类型都形如const type&amp;</span></span></span><br><span class="line"><span class="function"><span class="comment">// print(std::cout, 12, 13.3, &quot;asfdae&quot;);</span></span></span><br><span class="line"><span class="function"><span class="comment">// 实例化为 print(ostream&amp;, const int&amp;, const double&amp;, const string&amp;)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    os &lt;&lt; t &lt;&lt; <span class="string">&quot;, &quot;</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">print</span>(os, rest...);</span><br><span class="line">    <span class="comment">// 模式是函数参数包的名字 rest.</span></span><br><span class="line">    <span class="comment">// 扩展为一个由由包中元素组成的、逗号分隔的列表.</span></span><br><span class="line">    <span class="comment">// print(os, 13.3, &quot;asfdae&quot;);</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">print</span>(std::cout, <span class="number">12</span>, <span class="number">13.3</span>, <span class="string">&quot;asfdae&quot;</span>); <span class="comment">// 调用可变参版本</span></span><br><span class="line">    <span class="built_in">print</span>(std::cout, <span class="number">13.3</span>, <span class="string">&quot;asfdae&quot;</span>); <span class="comment">// 调用可变参版本</span></span><br><span class="line">    <span class="built_in">print</span>(std::cout, <span class="string">&quot;asfdae&quot;</span>); <span class="comment">// 两个print版本的参数都是匹配的，但是非可变参数模板比可变参数</span></span><br><span class="line">                                <span class="comment">// 模板更特例化, 因此编译器选择非可变参数版本</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>非可变参版本的声明必须在可变参函数之前,否则,可变参版本的<code>print</code>将会一直调用自身,直到耗尽参数包,用一个<code>os</code>参数去调用<code>print</code>(无法通过编译).</li>
+<li>对一个没有<code>&lt;&lt;</code>运算符的类型的对象调用<code>print</code>，编译都无法通过,从模板实例化出的对应版本的函数终究会用这个参数调用<code>os &lt;&lt; myclass</code>.</li>
+<li>对于<code>print(std::cout, &quot;asfdae&quot;)</code>,两个版本的<code>print</code>都提供同样好的参数匹配, 但是非可变参数模板比可变参数模板更加特例化, 因此编译器选择非可变参数版本(C++ primer 16.3 P615).</li>
+</ol>
+<h2 id="包扩展"><a href="#包扩展" class="headerlink" title="包扩展"></a>包扩展</h2><p>对于一个<code>参数包</code>(上面的rest),我们除了获取其大小外,唯一能做的就是扩展它(<code>expand</code>).扩展包就是对包中的每一个元素都应用一个指定的模式,并得到展开后的逗号分隔的列表, 这里的<code>模式</code>通常为一些类型限定修饰符.通过在模式右边放一个省略号(…)触发扩展操作。</p>
+<ul>
+<li><code>const Args&amp;... rest</code>扩展模板参数包,将<code>const type&amp;</code>应用到包中的每一个元素,为<code>print</code>生成参数列表。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="built_in">print</span>(cout, <span class="number">2</span>, <span class="number">3.14</span>, <span class="string">&quot;asd&quot;</span>);<span class="comment">// 包中有两个参数</span></span><br></pre></td></tr></table></figure>
+
+<p>此调用被实例化为</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">ostream&amp; <span class="title">print</span><span class="params">(ostream&amp;, <span class="type">const</span> <span class="type">int</span>&amp;, <span class="type">const</span> <span class="type">double</span>&amp;, <span class="type">const</span> <span class="type">char</span>[<span class="number">4</span>]&amp;)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>print</code>函数的<code>return</code>语句中的递归调用也触发了扩展(有…出现),只是它直接将<code>rest</code>扩展为逗号分隔的参数列表, 而没有改变各个元素本身的类型。 考虑更清晰的一个例子,有这样一个函数:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function">string <span class="title">debug_rep</span><span class="params">(<span class="type">const</span> T&amp; t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ostringstream ss;</span><br><span class="line">    ss &lt;&lt; t;</span><br><span class="line">    <span class="keyword">return</span> ss.<span class="built_in">str</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它通过流操作符从传进来的参数获取一个字符串.</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span>... Args&gt;</span><br><span class="line"><span class="function">ostream &amp;<span class="title">errorMsg</span><span class="params">(ostream&amp;os, <span class="type">const</span> Args&amp;... rest)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">print</span>(os, <span class="built_in">debug_rep</span>(rest)...);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>errorMsg</code>将传进来的参数包<code>rest</code>用<code>debug_rep</code>扩展</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="built_in">errorMsg</span>(cerr, fcnName, code.<span class="built_in">num</span>(), otherData, <span class="string">&quot;balabala&quot;</span>, item);</span><br></pre></td></tr></table></figure>
+
+<p>扩展结果:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">print(cerr, debug_rep(fcnName), debug_rep(code.num(),</span><br><span class="line">            debug_rep(otherData), debug_rep(&quot;balabala&quot;),</span><br><span class="line">            debug_rep(item)));</span><br></pre></td></tr></table></figure>
+
+<p>相对的:</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">print(os, debug_rep(rest...));</span><br></pre></td></tr></table></figure>
+
+<p>展开为将包传递给了debug_rep:<code>print(os, debug_rep(a1,a2,a3...an))</code>，所以这个调用会失败,<code>debug_rep</code>没有匹配的参数列表。</p>
+<h2 id="转发参数包"><a href="#转发参数包" class="headerlink" title="转发参数包"></a>转发参数包</h2><p>可变参数模板一个更为常见的使用场景是用可变参数实例化一个类,通常一个类有多个不同参数列表的构造函数,这就要求我们必须将不同数量不同类型的参数原封不动地传递给这个类的构造函数。</p>
+<p>标准库中的容器通常有个<code>emplace_back()</code>成员, 它是一个可变参数模板成员函数,它直接在容器管理的内存空间中用所给参数直接构造一个元素。</p>
+<p>保持类型信息是一个两阶段的过程。</p>
+<ul>
+<li>保持实参中的类型信息——将<code>emplace_back()</code>的参数定义为模板类型参数的右值引用。</li>
+<li>将这些参数传递给<code>construct</code>时，用<code>forward</code>保持实参原始类型。</li>
+</ul>
+<p>考虑标准库中的<code>vector</code>的<code>emplace_back()</code>实现:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">template</span> &lt;<span class="keyword">class</span>... _Valty&gt;</span><br><span class="line">    <span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">emplace_back</span><span class="params">(_Valty&amp;&amp;... _Val)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// insert by perfectly forwarding into element at end, provide strong guarantee</span></span><br><span class="line">        <span class="keyword">auto</span>&amp; _My_data   = _Mypair._Myval2;</span><br><span class="line">        pointer&amp; _Mylast = _My_data._Mylast;</span><br><span class="line">        <span class="keyword">if</span> (_Mylast != _My_data._Myend) &#123;</span><br><span class="line">            <span class="keyword">return</span> _Emplace_back_with_unused_capacity(_STD forward&lt;_Valty&gt;(_Val)...);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        _Ty&amp; _Result = *_Emplace_reallocate(_Mylast, _STD forward&lt;_Valty&gt;(_Val)...);</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> _HAS_CXX17</span></span><br><span class="line">        <span class="keyword">return</span> _Result;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span> <span class="comment">// ^^^ _HAS_CXX17 ^^^ // vvv !_HAS_CXX17 vvv</span></span></span><br><span class="line">        (<span class="type">void</span>) _Result;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// _HAS_CXX17</span></span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>暂时不考虑那么多细枝末节,仅专注于对可变参数的处理, 首先,其参数<code>emplace_back(_Valty&amp;&amp;... _Val)</code>用右值引用扩展了参数包中的所有参数, 在传递参数包<code>_Val</code>时，用<code>forward&lt;_Valty&gt;(_Val)...</code>同时既扩展了模板参数包<code>_Valty</code>也扩展了函数参数包<code>_Val</code>,最终会通过<code>allocator::construct()</code>调用容器的元素类型的构造函数.</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p> <a href="https://www.cnblogs.com/qicosmos/p/4325949.html">泛化之美–C++11可变模版参数的妙用</a></p>
 ]]></content>
       <categories>
         <category>C/C++基础</category>
@@ -1564,14 +1549,53 @@
 <li><p>把一个整型转为指针类型，反之亦然。</p>
 </li>
 <li><p>转换一个指针类型</p>
-<ul>
-<li>&#96;&#96;&#96;c++<br>int *ip;<br>char *pc &#x3D; reinterpret_cast&lt;char*&gt;(ip)<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line">  + 不可移植，慎用（俺也不懂, 用来转换一个指针的时候，还是会用的）</span><br><span class="line"></span><br><span class="line">+ static_cast：</span><br><span class="line"></span><br><span class="line">  + 强迫隐式转换，比如把non-const转为const，int转为double，把派生类指针转为基类指针</span><br><span class="line">  + 把void*指针转为指向某类型的指针。（指向任意非常量的指针转换成void * 是隐式转换 ）</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">+ 如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_casts。如果有个设计需要转型动作，试着发展无需转型的替代设计</span><br><span class="line"></span><br><span class="line">+ 如果转型是必要的，试着将它隐藏于某个函数背后。客户可以调用该函数，而不需要将转型放进他们自己的代码内</span><br><span class="line"></span><br><span class="line">+ 宁可以C++-style转型，不要使用旧式转型。前者易于辨识，转型动作明确。</span><br><span class="line"></span><br><span class="line">+ 转型往往令编译器增加一些代码，并不是什么都不做。</span><br><span class="line"></span><br><span class="line">  + 有人认为转型只不过告诉编译器把某种类型视为另一种类型，其他什么都没做，实际上这是不可能的。比如将int转为double的时候编译器肯定生成了一些代码，因为int的底层描述与double的底层描述并不相同。</span><br><span class="line"></span><br><span class="line">+ 何时采用旧式转型</span><br><span class="line"></span><br><span class="line">  + 一般来说，仅在需要调用一个explicit构造函数将一个对象传递给一个函数时使用旧式转型：</span><br><span class="line"></span><br><span class="line">  ```c++</span><br><span class="line">  class Widget&#123;</span><br><span class="line">  public:</span><br><span class="line">      explicit Widget(int size);</span><br><span class="line">      ...</span><br><span class="line">  &#125;;</span><br><span class="line">  void doSth(const Widget&amp; w);</span><br><span class="line">  </span><br><span class="line">  // 两者等价</span><br><span class="line">  doSth(Widget(15)); // 使用 Widget(int size) 构造了一个临时对象</span><br><span class="line">  doSth(static_cast&lt;Widget&gt;(15)); // 使用 Widget(int size) 构造了一个临时对象</span><br></pre></td></tr></table></figure></li>
-</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="type">int</span> *ip;</span><br><span class="line"><span class="type">char</span> *pc = <span class="built_in">reinterpret_cast</span>&lt;<span class="type">char</span>*&gt;(ip)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>不可移植，慎用（俺也不懂, 用来转换一个指针的时候，还是会用的）</p>
 </li>
 </ul>
+</li>
+<li><p>static_cast：</p>
+<ul>
+<li>强迫隐式转换，比如把non-const转为const，int转为double，把派生类指针转为基类指针</li>
+<li>把void*指针转为指向某类型的指针。（指向任意非常量的指针转换成void * 是隐式转换 ）</li>
+</ul>
+</li>
+<li><p>如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_casts。如果有个设计需要转型动作，试着发展无需转型的替代设计</p>
+</li>
+<li><p>如果转型是必要的，试着将它隐藏于某个函数背后。客户可以调用该函数，而不需要将转型放进他们自己的代码内</p>
+</li>
+<li><p>宁可以C++-style转型，不要使用旧式转型。前者易于辨识，转型动作明确。</p>
+</li>
+<li><p>转型往往令编译器增加一些代码，并不是什么都不做。</p>
+<ul>
+<li>有人认为转型只不过告诉编译器把某种类型视为另一种类型，其他什么都没做，实际上这是不可能的。比如将int转为double的时候编译器肯定生成了一些代码，因为int的底层描述与double的底层描述并不相同。</li>
+</ul>
+</li>
+<li><p>何时采用旧式转型</p>
+<ul>
+<li>一般来说，仅在需要调用一个explicit构造函数将一个对象传递给一个函数时使用旧式转型：</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Widget</span><span class="params">(<span class="type">int</span> size)</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">doSth</span><span class="params">(<span class="type">const</span> Widget&amp; w)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 两者等价</span></span><br><span class="line"><span class="built_in">doSth</span>(<span class="built_in">Widget</span>(<span class="number">15</span>)); <span class="comment">// 使用 Widget(int size) 构造了一个临时对象</span></span><br><span class="line"><span class="built_in">doSth</span>(<span class="built_in">static_cast</span>&lt;Widget&gt;(<span class="number">15</span>)); <span class="comment">// 使用 Widget(int size) 构造了一个临时对象</span></span><br></pre></td></tr></table></figure>
+
 <p>然而这种风格其实是一种构造</p>
 </li>
 </ul>
+]]></content>
+      <categories>
+        <category>C/C++基础</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>C++ 枚举类</title>
+    <url>/2022/03/21/C-%E6%9E%9A%E4%B8%BE%E7%B1%BB/</url>
+    <content><![CDATA[<h3 id="枚举类"><a href="#枚举类" class="headerlink" title="枚举类"></a>枚举类</h3><p>枚举类分为限定作用域和不限定作用两种类型。</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="keyword">enum class</span> <span class="title class_">color</span> &#123;red, yellow, green&#125;; <span class="comment">// 限定作用域</span></span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">color</span> &#123;red, yellow, green&#125;; <span class="comment">// 不限定作用域</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220321224553.png" alt="image-20220221215329693"></p>
 ]]></content>
       <categories>
         <category>C/C++基础</category>
@@ -2316,6 +2340,30 @@
       </tags>
   </entry>
   <entry>
+    <title>TCP/IP详解卷1 第12章 TCP初步</title>
+    <url>/2022/06/14/TCP-IP%E8%AF%A6%E8%A7%A3%E5%8D%B71-%E7%AC%AC12%E7%AB%A0-TCP%E5%88%9D%E6%AD%A5/</url>
+    <content><![CDATA[<h3 id="如何实现可靠传输？"><a href="#如何实现可靠传输？" class="headerlink" title="如何实现可靠传输？"></a>如何实现可靠传输？</h3><p>遇到的问题：</p>
+<ul>
+<li>分组乱序到达</li>
+<li>收到重复的分组</li>
+<li>丢包</li>
+</ul>
+<p>处理丢包的一种办法是： 重发分组直到它被正确接收。这需要一种方法来判断: </p>
+<ol>
+<li><p>接收方是否已收到分组</p>
+</li>
+<li><p>接收方接收到的分组是否有错误</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>TCP/IP详解卷1</category>
+      </categories>
+      <tags>
+        <tag>TCP/IP详解卷1</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux命令备忘</title>
     <url>/2022/04/18/Linux%E5%91%BD%E4%BB%A4%E5%A4%87%E5%BF%98/</url>
     <content><![CDATA[<h3 id="gcc"><a href="#gcc" class="headerlink" title="gcc"></a>gcc</h3><p><img src="https://raw.githubusercontent.com/yanleiwang/images/master/markdown/20220425003356.png" alt="image-20220425003354009"></p>
@@ -2433,56 +2481,6 @@
       </tags>
   </entry>
   <entry>
-    <title>TCP/IP详解卷1 第12章 TCP初步</title>
-    <url>/2022/06/14/TCP-IP%E8%AF%A6%E8%A7%A3%E5%8D%B71-%E7%AC%AC12%E7%AB%A0-TCP%E5%88%9D%E6%AD%A5/</url>
-    <content><![CDATA[<h3 id="如何实现可靠传输？"><a href="#如何实现可靠传输？" class="headerlink" title="如何实现可靠传输？"></a>如何实现可靠传输？</h3><p>遇到的问题：</p>
-<ul>
-<li>分组乱序到达</li>
-<li>收到重复的分组</li>
-<li>丢包</li>
-</ul>
-<p>处理丢包的一种办法是： 重发分组直到它被正确接收。这需要一种方法来判断: </p>
-<ol>
-<li><p>接收方是否已收到分组</p>
-</li>
-<li><p>接收方接收到的分组是否有错误</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>TCP/IP详解卷1</category>
-      </categories>
-      <tags>
-        <tag>TCP/IP详解卷1</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Unix/Linux IPC</title>
-    <url>/2022/06/04/Unix-Linux-IPC/</url>
-    <content><![CDATA[<h2 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h2><ul>
-<li>管道可以用来在两个相关进程间通信（具有公共祖先的两个进程）。</li>
-<li>在管道中数据的传递方向是单向的。管道的一段用于写入，另一端则用于读取 </li>
-<li>管道其实是一个在内核内存中维护的缓冲器，这个缓冲器的存储能力是有限的。一旦管<br>道被填满之后，后续向该管道的写入操作就会被阻塞直到读者从管道中移除了一些数据为止。  </li>
-<li>管道通常用于两个兄弟进程之间的通信——它们的父进程创建了管道，然后创建两个子进程，然后两个子进程分别关闭读端和写端。关闭的原因是：<ul>
-<li>确保进程不会耗尽其文件描述符的限制  </li>
-<li>读取数据的进程需要关闭管道的写端，这样当其他进程完成输出并关闭写端之后，读者就能够看到文件结束（在读完管道中的数据之后）。 否则因为内核知道至少还存在一个管道的写入描述符打开着，即读取进程自己打开着这个写端，则读者也不会看到文件结束。</li>
-<li>写入进程关闭其持有的管道的读取描述符是出于不同的原因。当一个进程试图向一个管<br>道中写入数据但没有任何进程拥有该管道的打开着的读取描述符时，内核会向写入进程发送一个 SIGPIPE 信号。在默认情况下，这个信号会杀死一个进程。但进程可以捕获或忽略该信号，这样就会导致管道上的 write()操作因 EPIPE 错误（已损坏的管道）而失败。收到 SIGPIPE信号或得到 EPIPE 错误对于标示出管道的状态是有用的，这就是为何需要关闭管道的未使用读取描述符的原因。</li>
-</ul>
-</li>
-<li>只有当所有进程中所有引用一个管道的文件描述符被关闭之后才会销毁该管道以及释放该管道占用的资源以供其他进程复用。</li>
-</ul>
-<h2 id="FIFO（命名管道）"><a href="#FIFO（命名管道）" class="headerlink" title="FIFO（命名管道）"></a>FIFO（命名管道）</h2><p>从语义上来讲， FIFO 与管道类似，它们两者之间最大的差别在于 <strong>FIFO 在文件系统中拥有一个名称</strong>，并且其打开方式与打开一个普通文件是一样的。这样就能够将 FIFO <strong>用于非相关进程之间的通信</strong>（如客户端和服务器）。</p>
-<p>一旦打开了 FIFO，就能在它上面使用与操作管道和其他文件的系统调用一样的 I&#x2F;O 系统调用了（如 read()、 write()和 close()）。与管道一样， FIFO 也有一个写入端和读取端，并且从管道中读取数据的顺序与写入的顺序是一样的。 FIFO 的名称也由此而来：先入先出。 FIFO 有时候也被称为命名管道。</p>
-<p>与管道一样，当所有引用 FIFO 的描述符都被关闭之后，所有未被读取的数据会被丢弃。  </p>
-]]></content>
-      <categories>
-        <category>Unix/Linux</category>
-      </categories>
-      <tags>
-        <tag>Unix/Linux</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Unix/Linux 信号</title>
     <url>/2022/05/19/Unix-Linux-%E4%BF%A1%E5%8F%B7/</url>
     <content><![CDATA[<h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><p>信号是发生某种事件的通知机制，可以由内核、另一进程或进程自身发送给进程。</p>
@@ -2584,6 +2582,75 @@
       </categories>
       <tags>
         <tag>Unix/Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Unix/Linux IPC</title>
+    <url>/2022/06/04/Unix-Linux-IPC/</url>
+    <content><![CDATA[<h2 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h2><ul>
+<li>管道可以用来在两个相关进程间通信（具有公共祖先的两个进程）。</li>
+<li>在管道中数据的传递方向是单向的。管道的一段用于写入，另一端则用于读取 </li>
+<li>管道其实是一个在内核内存中维护的缓冲器，这个缓冲器的存储能力是有限的。一旦管<br>道被填满之后，后续向该管道的写入操作就会被阻塞直到读者从管道中移除了一些数据为止。  </li>
+<li>管道通常用于两个兄弟进程之间的通信——它们的父进程创建了管道，然后创建两个子进程，然后两个子进程分别关闭读端和写端。关闭的原因是：<ul>
+<li>确保进程不会耗尽其文件描述符的限制  </li>
+<li>读取数据的进程需要关闭管道的写端，这样当其他进程完成输出并关闭写端之后，读者就能够看到文件结束（在读完管道中的数据之后）。 否则因为内核知道至少还存在一个管道的写入描述符打开着，即读取进程自己打开着这个写端，则读者也不会看到文件结束。</li>
+<li>写入进程关闭其持有的管道的读取描述符是出于不同的原因。当一个进程试图向一个管<br>道中写入数据但没有任何进程拥有该管道的打开着的读取描述符时，内核会向写入进程发送一个 SIGPIPE 信号。在默认情况下，这个信号会杀死一个进程。但进程可以捕获或忽略该信号，这样就会导致管道上的 write()操作因 EPIPE 错误（已损坏的管道）而失败。收到 SIGPIPE信号或得到 EPIPE 错误对于标示出管道的状态是有用的，这就是为何需要关闭管道的未使用读取描述符的原因。</li>
+</ul>
+</li>
+<li>只有当所有进程中所有引用一个管道的文件描述符被关闭之后才会销毁该管道以及释放该管道占用的资源以供其他进程复用。</li>
+</ul>
+<h2 id="FIFO（命名管道）"><a href="#FIFO（命名管道）" class="headerlink" title="FIFO（命名管道）"></a>FIFO（命名管道）</h2><p>从语义上来讲， FIFO 与管道类似，它们两者之间最大的差别在于 <strong>FIFO 在文件系统中拥有一个名称</strong>，并且其打开方式与打开一个普通文件是一样的。这样就能够将 FIFO <strong>用于非相关进程之间的通信</strong>（如客户端和服务器）。</p>
+<p>一旦打开了 FIFO，就能在它上面使用与操作管道和其他文件的系统调用一样的 I&#x2F;O 系统调用了（如 read()、 write()和 close()）。与管道一样， FIFO 也有一个写入端和读取端，并且从管道中读取数据的顺序与写入的顺序是一样的。 FIFO 的名称也由此而来：先入先出。 FIFO 有时候也被称为命名管道。</p>
+<p>与管道一样，当所有引用 FIFO 的描述符都被关闭之后，所有未被读取的数据会被丢弃。  </p>
+]]></content>
+      <categories>
+        <category>Unix/Linux</category>
+      </categories>
+      <tags>
+        <tag>Unix/Linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>c++ 名字查找和名字隐藏</title>
+    <url>/2022/03/10/c-%E5%90%8D%E5%AD%97%E6%9F%A5%E6%89%BE/</url>
+    <content><![CDATA[<h2 id="普通的变量和函数"><a href="#普通的变量和函数" class="headerlink" title="普通的变量和函数"></a>普通的变量和函数</h2><p>对于普通的变量和函数，名字查找（寻找与所用名字最匹配的声明的过程）的规则是：</p>
+<ul>
+<li>首先，在名字所在的作用域内查找声明语句，<strong>只考虑在名字的使用之前出现的声明。</strong></li>
+<li>如果没找到<ul>
+<li>继续查找外部作用域，如果最终没找到，报错。</li>
+</ul>
+</li>
+<li>如果找到了<ul>
+<li>就会忽略外部作用域（哪怕外部作用域有一个同名实体）</li>
+<li>剩下的工作就是检查名字是否匹配，然后转到重载函数调用规则，如果不匹配，就报错。所以<strong>内部作用域的名字会隐藏外部作用域的同名名字</strong></li>
+</ul>
+</li>
+</ul>
+<p>比如, 下面这段代码有两个错误</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">read</span><span class="params">()</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> read&#123;<span class="number">1</span>&#125;; <span class="comment">// 隐藏了外部作用域的read函数</span></span><br><span class="line">    <span class="built_in">read</span>();<span class="comment">// 报错！ 因为read是一个int，而不是可调用对象</span></span><br><span class="line">	<span class="built_in">func</span>(<span class="number">1</span>); <span class="comment">// 报错，名字func没找到	</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span> val)</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; val &lt;&lt;endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>正确的代码如下</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read</span><span class="params">()</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> read&#123;<span class="number">1</span>&#125;;</span><br><span class="line">    ::<span class="built_in">read</span>();</span><br><span class="line">    <span class="built_in">func</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span> val)</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; val &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="C-解析重载函数调用规则"><a href="#C-解析重载函数调用规则" class="headerlink" title="C++ 解析重载函数调用规则"></a>C++ 解析重载函数调用规则</h3><p>在看到是否有个函数可取用之前，C++首先确认这个函数对此调用是最佳匹配，如果有两个及以上最佳匹配，则报二义性错误。找出最佳匹配函数后才检验其可取用性。比如：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">func1</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Base2</span>&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">func1</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">D</span>: <span class="keyword">public</span> Base1, <span class="keyword">public</span> Base2&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">D d;</span><br><span class="line">d.<span class="built_in">func1</span>(); <span class="comment">// 二义性错误！</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Base1和Base2的两个func1 有相同的匹配程度，没有唯一的最佳匹配，哪怕Base2的func1无法取用！！！</p>
+<h2 id="类"><a href="#类" class="headerlink" title="类"></a>类</h2><ul>
+<li><p><strong>类成员变量的声明，成员函数的声明（返回类型+形参类型）</strong>与普通的变量和函数的名字查找规则一样，<strong>都必须在使用前确保可见</strong>，这也是为什么类里面的typedef通常被写在最前面。</p>
+</li>
+<li><p><strong>而成员函数的函数体的编译解析，是会等到编译器处理完类中的全部声明后才会处理</strong>，所以以下代码是没有问题的</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func1</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="built_in">func2</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func2</span><span class="params">()</span></span>&#123;</span><br><span class="line">		cout &lt;&lt; <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>C++ primer 7.4节</p>
+</li>
+</ul>
+]]></content>
+      <categories>
+        <category>C/C++基础</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
       </tags>
   </entry>
   <entry>
@@ -2729,78 +2796,6 @@
       </tags>
   </entry>
   <entry>
-    <title>c++ 名字查找和名字隐藏</title>
-    <url>/2022/03/10/c-%E5%90%8D%E5%AD%97%E6%9F%A5%E6%89%BE/</url>
-    <content><![CDATA[<h2 id="普通的变量和函数"><a href="#普通的变量和函数" class="headerlink" title="普通的变量和函数"></a>普通的变量和函数</h2><p>对于普通的变量和函数，名字查找（寻找与所用名字最匹配的声明的过程）的规则是：</p>
-<ul>
-<li>首先，在名字所在的作用域内查找声明语句，<strong>只考虑在名字的使用之前出现的声明。</strong></li>
-<li>如果没找到<ul>
-<li>继续查找外部作用域，如果最终没找到，报错。</li>
-</ul>
-</li>
-<li>如果找到了<ul>
-<li>就会忽略外部作用域（哪怕外部作用域有一个同名实体）</li>
-<li>剩下的工作就是检查名字是否匹配，然后转到重载函数调用规则，如果不匹配，就报错。所以<strong>内部作用域的名字会隐藏外部作用域的同名名字</strong></li>
-</ul>
-</li>
-</ul>
-<p>比如, 下面这段代码有两个错误</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">read</span><span class="params">()</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> read&#123;<span class="number">1</span>&#125;; <span class="comment">// 隐藏了外部作用域的read函数</span></span><br><span class="line">    <span class="built_in">read</span>();<span class="comment">// 报错！ 因为read是一个int，而不是可调用对象</span></span><br><span class="line">	<span class="built_in">func</span>(<span class="number">1</span>); <span class="comment">// 报错，名字func没找到	</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span> val)</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; val &lt;&lt;endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>正确的代码如下</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">read</span><span class="params">()</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;hello, world!&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="type">int</span> read&#123;<span class="number">1</span>&#125;;</span><br><span class="line">    ::<span class="built_in">read</span>();</span><br><span class="line">    <span class="built_in">func</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">func</span><span class="params">(<span class="type">int</span> val)</span></span>&#123;</span><br><span class="line">    cout &lt;&lt; val &lt;&lt; endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="C-解析重载函数调用规则"><a href="#C-解析重载函数调用规则" class="headerlink" title="C++ 解析重载函数调用规则"></a>C++ 解析重载函数调用规则</h3><p>在看到是否有个函数可取用之前，C++首先确认这个函数对此调用是最佳匹配，如果有两个及以上最佳匹配，则报二义性错误。找出最佳匹配函数后才检验其可取用性。比如：</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base1</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">func1</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Base2</span>&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">func1</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">D</span>: <span class="keyword">public</span> Base1, <span class="keyword">public</span> Base2&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">D d;</span><br><span class="line">d.<span class="built_in">func1</span>(); <span class="comment">// 二义性错误！</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>Base1和Base2的两个func1 有相同的匹配程度，没有唯一的最佳匹配，哪怕Base2的func1无法取用！！！</p>
-<h2 id="类"><a href="#类" class="headerlink" title="类"></a>类</h2><ul>
-<li><p><strong>类成员变量的声明，成员函数的声明（返回类型+形参类型）</strong>与普通的变量和函数的名字查找规则一样，<strong>都必须在使用前确保可见</strong>，这也是为什么类里面的typedef通常被写在最前面。</p>
-</li>
-<li><p><strong>而成员函数的函数体的编译解析，是会等到编译器处理完类中的全部声明后才会处理</strong>，所以以下代码是没有问题的</p>
-<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Test</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func1</span><span class="params">()</span></span>&#123;</span><br><span class="line">		<span class="built_in">func2</span>();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">func2</span><span class="params">()</span></span>&#123;</span><br><span class="line">		cout &lt;&lt; <span class="string">&quot;hello&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>C++ primer 7.4节</p>
-</li>
-</ul>
-]]></content>
-      <categories>
-        <category>C/C++基础</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux c编程: io</title>
-    <url>/2022/03/26/linux-c%E7%BC%96%E7%A8%8B-io/</url>
-    <content><![CDATA[<h2 id="标准IO"><a href="#标准IO" class="headerlink" title="标准IO"></a>标准IO</h2><ul>
-<li><p><code>fopen</code></p>
-</li>
-<li><p><code>fclose</code></p>
-</li>
-<li><p><code>fgetc</code></p>
-</li>
-<li><p><code>fputc</code></p>
-</li>
-<li><p><code>fgets</code></p>
-</li>
-<li><p><code>fputs</code></p>
-</li>
-<li><p><code>fread</code></p>
-</li>
-<li><p><code>fwrite</code></p>
-</li>
-</ul>
-<h2 id="系统IO"><a href="#系统IO" class="headerlink" title="系统IO"></a>系统IO</h2>]]></content>
-      <categories>
-        <category>linux C</category>
-      </categories>
-      <tags>
-        <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>左值和右值</title>
     <url>/2022/03/09/%E5%B7%A6%E5%80%BC%E5%92%8C%E5%8F%B3%E5%80%BC/</url>
     <content><![CDATA[<h2 id="值类别"><a href="#值类别" class="headerlink" title="值类别"></a>值类别</h2><p>自C++11开始，表达式的值分为</p>
@@ -2872,6 +2867,47 @@
       </categories>
       <tags>
         <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux c编程: io</title>
+    <url>/2022/03/26/linux-c%E7%BC%96%E7%A8%8B-io/</url>
+    <content><![CDATA[<h2 id="标准IO"><a href="#标准IO" class="headerlink" title="标准IO"></a>标准IO</h2><ul>
+<li><p><code>fopen</code></p>
+</li>
+<li><p><code>fclose</code></p>
+</li>
+<li><p><code>fgetc</code></p>
+</li>
+<li><p><code>fputc</code></p>
+</li>
+<li><p><code>fgets</code></p>
+</li>
+<li><p><code>fputs</code></p>
+</li>
+<li><p><code>fread</code></p>
+</li>
+<li><p><code>fwrite</code></p>
+</li>
+</ul>
+<h2 id="系统IO"><a href="#系统IO" class="headerlink" title="系统IO"></a>系统IO</h2>]]></content>
+      <categories>
+        <category>linux C</category>
+      </categories>
+      <tags>
+        <tag>C/C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>开端</title>
+    <url>/2022/02/24/%E5%BC%80%E7%AB%AF/</url>
+    <content><![CDATA[<p><strong>2020.11.14 与WL相恋.</strong></p>
+]]></content>
+      <categories>
+        <category>生活</category>
+      </categories>
+      <tags>
+        <tag>爱情</tag>
       </tags>
   </entry>
   <entry>
@@ -2951,18 +2987,6 @@
       </categories>
       <tags>
         <tag>C/C++</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>开端</title>
-    <url>/2022/02/24/%E5%BC%80%E7%AB%AF/</url>
-    <content><![CDATA[<p><strong>2020.11.14 与WL相恋.</strong></p>
-]]></content>
-      <categories>
-        <category>生活</category>
-      </categories>
-      <tags>
-        <tag>爱情</tag>
       </tags>
   </entry>
   <entry>
