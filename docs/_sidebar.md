@@ -1,9 +1,9 @@
 - MySql
-  - [Mysql-´óĞ¡Ğ´¹æ·¶.md](MySql/Mysql-´óĞ¡Ğ´¹æ·¶.md)
-  - [mysql-³£ÓÃÃüÁî.md](MySql/mysql-³£ÓÃÃüÁî.md)
-  - [mysql-ĞÔÄÜ·ÖÎö¹¤¾ßµÄÊ¹ÓÃ.md](MySql/mysql-ĞÔÄÜ·ÖÎö¹¤¾ßµÄÊ¹ÓÃ.md)
-  - [mysql-Ë÷ÒıµÄ´´½¨ÓëÉè¼ÆÔ­Ôò.md](MySql/mysql-Ë÷ÒıµÄ´´½¨ÓëÉè¼ÆÔ­Ôò.md)
-  - [mysql-Âß¼­¼Ü¹¹.md](MySql/mysql-Âß¼­¼Ü¹¹.md)
+  - [Mysql-å¤§å°å†™è§„èŒƒ.md](MySql/Mysql-å¤§å°å†™è§„èŒƒ.md)
+  - [mysql-å¸¸ç”¨å‘½ä»¤.md](MySql/mysql-å¸¸ç”¨å‘½ä»¤.md)
+  - [mysql-æ€§èƒ½åˆ†æå·¥å…·çš„ä½¿ç”¨.md](MySql/mysql-æ€§èƒ½åˆ†æå·¥å…·çš„ä½¿ç”¨.md)
+  - [mysql-ç´¢å¼•çš„åˆ›å»ºä¸è®¾è®¡åŸåˆ™.md](MySql/mysql-ç´¢å¼•çš„åˆ›å»ºä¸è®¾è®¡åŸåˆ™.md)
+  - [mysql-é€»è¾‘æ¶æ„.md](MySql/mysql-é€»è¾‘æ¶æ„.md)
 - test
   - [test123.md](test/test123.md)
-  - [ÍõÑåÀÚ](test/ÍõÑåÀÚ.md)
+  - [ç‹å½¦ç£Š.md](test/ç‹å½¦ç£Š.md)

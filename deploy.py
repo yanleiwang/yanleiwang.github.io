@@ -22,7 +22,7 @@ def scan_file(path, level, target):
 def gen_sidebar():
     print("开始生成sidebar文件\n")
     os.chdir('docs')
-    with open("_sidebar.md", "w") as f:
+    with open("_sidebar.md", "w", encoding='utf-8') as f:
         scan_file(".", 0, f)
 
 
